@@ -61,12 +61,20 @@ struct MyOuterStruct {
 ## Todo
 This project is being activley worked on
 
+- [x] Trailing Commas
 - [x] Suport for no parens around types
 - [ ] Derive macros
+- [ ] Serde Integration
 - [ ] Enums
 - [ ] Tuple Structs
 - [ ] Attribute Compatabilty
 - [ ] Autonamed fields
+- [ ] Better Documnation
+- [ ] Better Testing
+- [ ] Visibility Modifiers
+- [ ] Generic Parameters
+- [ ] Lifetimes
+
 
 ## Contributing
 
