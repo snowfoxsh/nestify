@@ -2,7 +2,8 @@
 name = "nestify"
 version = "0.1.0"
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
+authors = ["Patrick Unick <dev_storm@winux.com>"]
+license = "MIT"
+keywords = ["macro", "nested", "syntax", "struct", "api-response"]
+repository = "https://github.com/snowfoxsh/nestify"
+description = "Nestify offers a macro to simplify and beautify nested struct definitions in Rust, enabling cleaner, more readable code structures with less verbosity. It's especially valuable for handling API responses."
