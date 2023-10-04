@@ -23,8 +23,8 @@ nestify = "0.1.1"
 Then, in your Rust code, import the crate and macro:
 
 ```rust
-extern crate nestify;
-use nestify::nestify;
+extern crate nestify; // optional
+use nestify::nest;
 ```
 
 ## Usage
@@ -32,9 +32,9 @@ use nestify::nestify;
 Here's a basic example:
 
 ```rust
-use nestify::nestify;
+use nestify::nest;
 
-nestify!{
+nest!{
     struct MyOuterStruct {
         field1: struct MyInnerStruct {
             subfield1: i32,
@@ -59,7 +59,8 @@ struct MyOuterStruct {
 }
 ```
 ## Todo
-This project is being activley worked on
+This project is being activley worked on. Check proc branch for the proc macro version.
+The proc version will soon become the main version!
 
 - [x] Trailing Commas
 - [x] Suport for no parens around types
