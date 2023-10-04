@@ -7,3 +7,11 @@ license = "MIT"
 keywords = ["macro", "nested", "syntax", "struct", "api-response"]
 repository = "https://github.com/snowfoxsh/nestify"
 description = "Nestify offers a macro to simplify and beautify nested struct definitions in Rust, enabling cleaner, more readable code structures with less verbosity. It's especially valuable for handling API responses."
+
+[lib]
+proc-macro = true
+
+[dependencies]
+proc-macro2 = "1.0.67"
+syn = "2.0.37"
+quote = "1.0.33"
