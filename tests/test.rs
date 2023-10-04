@@ -16,6 +16,67 @@ fn test_empty_struct() {
 }
 
 #[test]
+fn test_nested() {
+    nest! {
+        struct Parent {
+            f: (),
+            child: struct Child { }
+        }
+    }
+
+    let _ = Parent { f: (), child: Child {} };
+}
+
+#[test]
+fn test_generics() {
+    nest! {
+        struct Struct<'a, T> {
+            s: &'a str,
+            t: T
+        }
+    }
+
+    let _ = Struct { s: "", t: () };
+}
+
+#[test]
+fn test_nested_generics() {
+    nest! {
+        struct Parent<'p, P> {
+            child ::<'p, P> : struct Child<'c, C> {
+                s: &'c str,
+                f: C
+            }
+        }
+    }
+
+    let _ = Parent { child: Child { s: "", f: () } };
+}
+
+#[test]
+fn test_complex_types() {
+    nest! {
+        struct Struct {
+            payload: Box<Result<String, Option<bool>>>
+        }
+
+    }
+
+    let _ = Struct { payload: Box::new(Ok("Test".to_string())) };
+}
+
+#[test]
+fn test_attrs() {
+    nest! {
+        struct NoClone {
+            c: #[derive(Clone)] struct YesClone { }
+        }
+    }
+
+    let _ = NoClone { c: YesClone { } };
+}
+
+#[test]
 fn test_rec_attrs() {
     nest! {
         #[derive(Debug)]*
