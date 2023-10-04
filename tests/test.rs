@@ -100,18 +100,6 @@ fn test_rec_attrs() {
         }
     }
 
-    nest! {
-    #[apply_too_all]*
-    #[apply_too_this]
-    struct GrandParent {
-        parent: struct Parent {
-            child: struct Child {
-                payload: ()
-            }
-        }
-    }
-}
-
     let test = GrandParent { parent: Parent { child: Child { payload: () } } };
     assert_eq!(
         "GrandParent { parent: Parent { child: Child { payload: () } } }",
