@@ -65,6 +65,17 @@ fn test_complex_types() {
     let _ = Struct { payload: Box::new(Ok("Test".to_string())) };
 }
 
+
+#[test]
+fn test_basic_attrs() {
+    nest! {
+        #[derive(Clone)]
+        struct CloneMe { }
+    }
+    let x = CloneMe{};
+    let c = x.clone();
+}
+
 #[test]
 fn test_attrs() {
     nest! {
@@ -88,6 +99,18 @@ fn test_rec_attrs() {
             }
         }
     }
+
+    nest! {
+    #[apply_too_all]*
+    #[apply_too_this]
+    struct GrandParent {
+        parent: struct Parent {
+            child: struct Child {
+                payload: ()
+            }
+        }
+    }
+}
 
     let test = GrandParent { parent: Parent { child: Child { payload: () } } };
     assert_eq!(

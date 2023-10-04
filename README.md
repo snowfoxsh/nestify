@@ -17,7 +17,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nestify = "0.1.1"
+nestify = "0.2.0"
 ```
 
 Then, in your Rust code, import the crate and macro:
@@ -29,14 +29,14 @@ use nestify::nest;
 
 ## Usage
 
-Here's a basic example:
+### Basic example:
 
 ```rust
 use nestify::nest;
 
 nest!{
-    struct MyOuterStruct {
-        field1: struct MyInnerStruct {
+    struct Outer {
+        field1: struct Inner {
             subfield1: i32,
             subfield2: String,
         },
@@ -48,34 +48,112 @@ nest!{
 This will produce:
 
 ```rust
-struct MyInnerStruct {
+struct Outer {
+    field1: Inner,
+    field2: f64,
+}
+
+struct Inner {
     subfield1: i32,
     subfield2: String,
 }
+```
 
-struct MyOuterStruct {
-    field1: MyInnerStruct,
-    field2: f64,
+### Generics
+
+```rust
+use nestify::nest;
+
+nest! {
+    struct Example<'a, T> {
+        s: &'a str,
+        t: T
+    }
 }
 ```
-## Todo
-This project is being actively worked on. Check proc branch for the proc macro version.
-The proc version will soon become the main version!
 
-- [x] Trailing Commas
-- [x] Support for no parens around types
-- [ ] Derive macros
-- [ ] Serde Integration
-- [ ] Enums
-- [ ] Tuple Structs
-- [ ] Attribute Compatibility
-- [ ] Auto-named fields
-- [ ] Better Documentation
-- [ ] Better Testing
-- [ ] Visibility Modifiers
-- [ ] Generic Parameters
-- [ ] Lifetimes
+This will produce: 
 
+```rust
+struct Struct<'a, T> { 
+    s: &'a str, 
+    t: T, 
+}
+```
+
+#### Nested Generics
+When defining nested generics you need to add generics to types. Enter "fish" syntax.
+To define generics on the field write `::<...>`. This will let you specify the nested generic types.
+
+```rust
+nest! {
+    struct Parent<'p, P> {
+        child::<'p, P> : struct Child<'c, C> {
+            s: &'c str,
+            f: C
+        }
+    }
+}
+```
+
+This will produce: 
+```rust
+struct Parent<'p, P> { 
+    child: Child<'p, P>,
+}
+
+struct Child<'c, C> {
+    s: &'c str,
+    f: C,
+}
+```
+
+### Attributes
+You can apply attributes just like you would with a normal struct.
+
+```rust
+nest! {
+    #[derive(Clone)]
+    struct CloneMe {}
+}
+let x = CloneMe {};
+let cl = x.clone();
+```
+
+Using `*` syntax you can inherit attributes to child structures.
+
+```rust
+nest! {
+    #[apply_all]*
+    #[apply_this]
+    struct GrandParent {
+        parent: struct Parent {
+            child: struct Child {
+                payload: ()
+            }
+        }
+    }
+}
+```
+This will produce: 
+
+```rust
+#[apply_all]
+#[apply_this]
+struct GrandParent {
+    parent: Parent,
+}
+
+#[apply_all]
+struct Parent {
+    child: Child,
+}
+
+#[apply_all]
+struct Child {
+    payload: (),
+}
+```
 
 ## Contributing
 

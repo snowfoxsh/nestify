@@ -1,0 +1,14 @@
+# Todo
+- [x] Trailing Commas
+- [x] Support for no parens around types
+- [x] Derive macros
+- [x] Serde Integration
+- [ ] Enums
+- [ ] Tuple Structs
+- [x] Attribute Compatibility
+- [ ] Auto-named fields
+- [ ] Better Documentation
+- [ ] Better Testing
+- [x] Visibility Modifiers
+- [x] Generic Parameters
+- [x] Lifetimes
