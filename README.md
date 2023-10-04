@@ -59,18 +59,18 @@ struct MyOuterStruct {
 }
 ```
 ## Todo
-This project is being activley worked on. Check proc branch for the proc macro version.
+This project is being actively worked on. Check proc branch for the proc macro version.
 The proc version will soon become the main version!
 
 - [x] Trailing Commas
-- [x] Suport for no parens around types
+- [x] Support for no parens around types
 - [ ] Derive macros
 - [ ] Serde Integration
 - [ ] Enums
 - [ ] Tuple Structs
-- [ ] Attribute Compatabilty
-- [ ] Autonamed fields
-- [ ] Better Documnation
+- [ ] Attribute Compatibility
+- [ ] Auto-named fields
+- [ ] Better Documentation
 - [ ] Better Testing
 - [ ] Visibility Modifiers
 - [ ] Generic Parameters
