@@ -17,7 +17,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nestify = "0.2.0"
+nestify = "0.2.1"
 ```
 
 Then, in your Rust code, import the crate and macro:
