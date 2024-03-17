@@ -4,13 +4,16 @@ use syn::{braced, Expr, FieldMutability, Generics, Ident, parenthesized, Token, 
 use syn::ext::IdentExt;
 use syn::parse::{Parse, ParseStream};
 use crate::attributes::{FieldAttribute, ItemAttribute};
+use crate::fish::GenFish;
 use crate::ty::SpecialType;
-
-use syn::DeriveInput;
-
 
 
 // most of the comments are stolen from the `syn` crate doc because im lazzzzzzy
+
+
+// --- NOTES --- //
+
+// --- NOTES --- //
 
 /// The base type definition. It allows recursive definition expansions therefore
 /// it is *Special*
@@ -31,9 +34,9 @@ pub enum Body {
 
 /// Structure Body aka Data in syn
 pub struct BodyStruct {
-    pub struct_token: Token![struct],
+    struct_token: Token![struct],
     pub fields: SpecialFields,
-    pub semi_token: Option<Token![;]>
+    semi_token: Option<Token![;]>
 }
 
 /// Enumeration Body aka Data in syn
@@ -55,13 +58,13 @@ pub struct SpecialVariant {
     /// #>[...]*<?> // applied to type definitions in variant
     /// Variant
     /// ```
-    attrs: Vec<FieldAttribute>, // field attribute
+    pub attrs: Vec<FieldAttribute>, // field attribute
 
     /// Name of the variant.
-    ident: Ident,
+    pub ident: Ident,
 
     /// Content stored in the variant.
-    fields: SpecialFields,
+    pub fields: SpecialFields,
 
     /// Explicit discriminant: `Variant = 1`
     pub discriminant: Option<(Token![=], Expr)>,
@@ -90,25 +93,26 @@ pub enum SpecialFields {
 /// y: f64
 /// }`
 pub struct FieldsNamed {
-    brace_token: token::Brace,
-    named: Punctuated<SpecialField, Token![,]>
+    pub brace_token: token::Brace,
+    pub named: Punctuated<SpecialField, Token![,]>
 }
 
 /// Unnamed fields of a tuple struct or tuple variant such as `Some(T)`.
 pub struct FieldsUnnamed {
-    paren_token: token::Paren,
-    unnamed: Punctuated<SpecialField, Token![,]>
+    pub paren_token: token::Paren,
+    pub unnamed: Punctuated<SpecialField, Token![,]>
 }
 
 // note: refactor to a new file eventually
 
 /// A field of a struct or enum variant.
-struct SpecialField {
+pub struct SpecialField {
     pub attrs: Vec<FieldAttribute>,
     pub vis: Visibility,
     pub mutability: FieldMutability,
     /// Name of the field if any
     pub ident: Option<Ident>,
+    pub fish: Option<GenFish>,
     pub colon_token: Option<Token![:]>,
     pub ty: SpecialType,
 }
@@ -281,6 +285,13 @@ impl SpecialField {
             input.parse()
         }?;
 
+        // let fish = input.parse::<GenFish>()?;
+        let fish = if input.peek(Token![::]) {
+            Some(input.parse::<GenFish>()?)
+        } else {
+            None
+        };
+
         let colon_token: Token![:] = input.parse()?;
 
         let ty: SpecialType = if unnamed_field
@@ -301,6 +312,7 @@ impl SpecialField {
             vis,
             mutability: FieldMutability::None,
             ident: Some(ident),
+            fish,
             colon_token: Some(colon_token),
             ty
         })
@@ -312,6 +324,7 @@ impl SpecialField {
             vis: input.parse()?,
             mutability: FieldMutability::None,
             ident: None,
+            fish: None,
             colon_token: None,
             ty: input.parse()?,
         })
@@ -319,3 +332,10 @@ impl SpecialField {
 }
 
 // todo: actually refactor a bunch of stuff
+
+
+// function with an end can done with diffrent levels of compedence
+// unlike other animals humans have the ability to think
+// thats what makes us what we are
+
+// any function can be better or wores therefore reasoning can be done better or worse
