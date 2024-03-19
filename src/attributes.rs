@@ -1,4 +1,6 @@
-use syn::{bracketed, Meta, Token, token};
+use proc_macro2::TokenStream;
+use quote::ToTokens;
+use syn::{Attribute, bracketed, Meta, Token, token};
 use syn::parse::ParseStream;
 
 pub struct ItemAttribute {
@@ -23,15 +25,25 @@ impl FieldAttribute {
     }
 
     pub fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
-        if let Ok(ty) = TypeApplication::single_parse_outer(input) {
-            Ok(Self::Type(ty))
-        } else if let Ok(it) = ItemAttribute::single_parse_outer(input) {
-            Ok(Self::Item(it))
+        if input.peek(Token![#]) && input.peek2(Token![>]) {
+            let content;
+            Ok(Self::Type(TypeApplication {
+                pound_token: input.parse()?,
+                indent_token: input.parse()?,
+                bracket_token: bracketed!(content in input),
+                meta: content.parse()?,
+                star_token: input.parse()?,
+            }))
+        } else if input.peek(Token![#]) {
+            Ok(Self::Item(input.call(ItemAttribute::parse_single_outer)?))
         } else {
-            Err(input.error("Expected Attribute"))
+            // todo make this spanned
+            // panic!("expected an attribute")
+            Err(input.error("Expected an attribute"))
         }
     }
 }
+
 
 pub struct TypeApplication {
     pub pound_token: Token![#],
@@ -66,18 +78,38 @@ impl ItemAttribute {
     pub(crate) fn parse_outer(input: ParseStream) -> syn::Result<Vec<Self>> {
         let mut attrs = vec![];
         while input.peek(Token![#]) && !input.peek2(Token![>]) {
-            attrs.push(input.call(Self::single_parse_outer)?);
+            attrs.push(input.call(Self::parse_single_outer)?);
         }
         Ok(attrs)
     }
 
-    fn single_parse_outer(input: ParseStream) -> syn::Result<Self> {
+    fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
         let content;
         Ok(Self {
             pound_token: input.parse()?,
             bracket_token: bracketed!(content in input),
             meta: content.parse()?,
             star_token: input.parse()?
+        })
+    }
+}
+
+impl ToTokens for ItemAttribute {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.pound_token.to_tokens(tokens);
+
+        self.bracket_token.surround(tokens, |meta_tokens| {
+            self.meta.to_tokens(meta_tokens)
+        })
+    }
+}
+
+impl ToTokens for TypeApplication {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.pound_token.to_tokens(tokens);
+
+        self.bracket_token.surround(tokens, |meta_tokens| {
+            self.meta.to_tokens(meta_tokens)
         })
     }
 }

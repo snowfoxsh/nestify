@@ -7,7 +7,6 @@ use crate::ty::SpecialType;
 
 mod special_data;
 mod attributes;
-mod syn_misc;
 mod ty;
 mod fish;
 

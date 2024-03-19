@@ -7,6 +7,7 @@ fn please_work() {
     nest!(
         struct Hello {
             pub o: struct Another {
+                #[derive(Debug)]
                 s: struct A {
                     a: struct B {
 
