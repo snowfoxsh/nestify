@@ -43,6 +43,7 @@ pub fn nest(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 }
 
 
+// this is all one nasty function but i think its the best way
 // todo: add attribute support
 fn unpack(def: Special) -> proc_macro2::TokenStream {
     let attrs = def.attrs;
@@ -76,24 +77,21 @@ fn unpack(def: Special) -> proc_macro2::TokenStream {
                         match field.ty {
                             // leaf node aka non-special type => dont recurse
                             SpecialType::Type(ty) => {
-                                let field_tokens = quote!(
+                                fields.push(quote!(
                                     // #(#attrs)* todo
                                     #vis #ident : #ty
                                     // todo: add fish syntax
-                                );
-
-                                fields.push(field_tokens);
+                                ));
                             }
                             // recuse down the parse stack
                             SpecialType::Def(special) => {
                                 // trust that ty will be a defintion step
                                 let ty = &special.ident; // dont move so no clone!
-                                let field_tokens = quote!(
+                                fields.push(quote!(
                                     // #(#attrs)* todo
                                     #vis #ident : #ty
                                     // todo: add fish syntax
-                                );
-                                fields.push(field_tokens);
+                                ));
 
                                 // unpack the definition of the type
                                 // then add it to the definition buffer
@@ -105,34 +103,73 @@ fn unpack(def: Special) -> proc_macro2::TokenStream {
                         }
                     }
 
-
-
                     // define our current ctx struct
                     // - define attributes
                     // - define ident and specify generics
                     // - insert our previous definitions behind the struct
                     quote!(
                         // todo attrs
-                        struct #ident #generics {
-                            #(#fields)* ,
+                        #visablity struct #ident #generics {
+                            #(#fields),*
                         }
 
                         #(#definitions)*
                     )
                 }
+
+
                 // unpack a tuple struct or tuple variant
                 // todo [change] remove the semicolon
                 SpecialFields::Unnamed(unnamed) => {
-                    // for field in unnamed.unnamed {
-                    //
-                    // }
+                    let mut fields = vec![];
+                    let mut definitions = vec![];
 
-                    quote!();
-                    todo!()
+                    // iterate through types
+                    for field in unnamed.unnamed {
+                        let attrs = field.attrs;
+                        let vis = field.vis;
+
+                        // unused field mutability see syn doc for FieldMutability
+                        let _mutability = field.mutability;
+
+                        // this is an unnamed variant so there should never Some(T)
+                        let _ident = field.ident; // todo: warn if this is not none
+
+                        // branch off based on if type is defined or should be defined
+                        match field.ty {
+                            SpecialType::Type(ty) => {
+                                fields.push(quote!(
+                                    // #(#attrs)* todo
+                                    #vis #ty
+                                ));
+                            }
+                            SpecialType::Def(special) => {
+                                let ty = &special.ident;
+
+                                fields.push(quote!(
+                                    // #(#attrs)* todo
+                                    #vis #ty
+                                ));
+
+                                let definition = unpack(special);
+                                definitions.push(definition);
+                            }
+                        }
+                    }
+
+                    quote!(
+                        // todo attrs
+                        #visablity struct #ident #generics (
+                            #(#fields),*
+                        );
+
+                        #(#definitions)*
+                    )
                 }
                 SpecialFields::Unit => {
-                    quote!();
-                    todo!()
+                    quote!(
+                        #visablity struct #ident #generics;
+                    )
                 }
             }
         },
