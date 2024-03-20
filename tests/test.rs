@@ -45,11 +45,12 @@ fn enum_test() {
 #[test]
 fn attribute_test() {
     nest! {
-        #[derive(Debug)]
-        struct Outside {
-            f: #[derive(Debug)] struct Inside {
-                
-            }
+        #[derive(Default)]
+        enum AnEnum {
+            One,
+            #[default]
+            Default,
+            Two,
         }
     }
 }

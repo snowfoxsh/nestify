@@ -197,13 +197,17 @@ impl Unpack for Special {
                 let mut variants = vec![];
                 
                 for variant in body_enum.variants {
+                    let attrs = variant.attrs;
                     let ident = variant.ident;
                     let (field_body, mut definitions) = variant.fields.unpack();
                     accumulated_definitions.append(&mut definitions);
                     // todo: get variant working
                     // let discriminant = variant.discriminant;
                     
-                    let variant = quote!(#ident #field_body);
+                    let variant = quote!(
+                        #(#attrs)*
+                        #ident #field_body
+                    );
                     variants.push(variant);
                 }
                 
