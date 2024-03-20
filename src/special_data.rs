@@ -70,6 +70,13 @@ pub struct SpecialVariant {
     pub discriminant: Option<(Token![=], Expr)>,
 }
 
+// todo: i think discriminant should be in another struct, but thats low priority
+// pub struct Discriminant {
+//     pub equals: Token![=],
+//     pub expr: Expr,
+// }
+
+
 /// Data stored in an enum variant or structure
 pub enum SpecialFields {
     /// Named fields of a struct or struct variant such as

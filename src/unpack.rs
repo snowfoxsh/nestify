@@ -157,9 +157,9 @@ impl Unpack for Special {
         // based on the type of the Special type [struct | enum | union?]
         // then determine the expansion
         match self.body {
-            Body::Struct(body) => match body.fields {
+            Body::Struct(body_struct) => match body_struct.fields {
                 SpecialFields::Named(named) => {
-                    let (fields, definitions) = named.unpack();
+                    let (body, definitions) = named.unpack();
 
                     // define our current ctx struct
                     // - define attributes
@@ -167,38 +167,51 @@ impl Unpack for Special {
                     // - insert our previous definitions behind the struct
                     quote!(
                         // todo attrs
-                        #visablity struct #ident #generics {
-                            #(#fields),*
-                        }
+                        #visablity struct #ident #generics #body
 
                         #(#definitions)*
                     )
                 }
                 SpecialFields::Unnamed(unnamed) => {
-                    let (fields, definitions) = unnamed.unpack();
+                    let (body, definitions) = unnamed.unpack();
 
                     quote!(
                         // todo attrs
-                        #visablity struct #ident #generics (
-                            #(#fields),*
-                        );
+                        #visablity struct #ident #generics #body;
 
                         #(#definitions)*
                     )
                 }
                 SpecialFields::Unit => {
                     quote!(
+                        // todo attrs
                         #visablity struct #ident #generics;
                     )
                 }
             }
-            Body::Enum(body) => {
-                for variant in body.variants {
-                    match variant {
-                        SpecialVariant { .. } => {}
-                    }
+            Body::Enum(body_enum) => {
+                let mut accumulated_definitions = vec![];
+                let mut variants = vec![];
+                
+                for variant in body_enum.variants {
+                    let ident = variant.ident;
+                    let (field_body, mut definitions) = variant.fields.unpack();
+                    accumulated_definitions.append(&mut definitions);
+                    // todo: get variant working
+                    // let discriminant = variant.discriminant;
+                    
+                    let variant = quote!(#ident #field_body);
+                    variants.push(variant);
                 }
-                todo!()
+                
+                quote!(
+                    // todo attrs
+                    #visablity enum #ident #generics {
+                        #( #variants ),*
+                    }
+                    
+                    #(#accumulated_definitions)*
+                )
             }
         }
     }
@@ -206,18 +219,20 @@ impl Unpack for Special {
 
 
 impl Unpack for SpecialFields {
-    type Output = TokenStream;
+    type Output = (TokenStream, Vec<TokenStream>);
+    //             ^body        ^definitions
     fn unpack(self) -> Self::Output {
         match self {
-            SpecialFields::Named(_) => {todo!()}
-            SpecialFields::Unnamed(_) => {todo!()}
-            SpecialFields::Unit => {todo!()}
+            SpecialFields::Named(named) => named.unpack(),
+            SpecialFields::Unnamed(unnamed) => unnamed.unpack(),
+            SpecialFields::Unit => (TokenStream::default(), Vec::<TokenStream>::default())
         }
     }
 }
 
 impl Unpack for FieldsNamed {
-    type Output = (Vec<TokenStream>, Vec<TokenStream>);
+    type Output = (TokenStream, Vec<TokenStream>);
+    //             ^body        ^definitions
     fn unpack(self) -> Self::Output {
         // fields buffer load each
         let mut fields = vec![];
@@ -262,13 +277,18 @@ impl Unpack for FieldsNamed {
                 }
             }
         }
+        
+        let body = quote!(
+            { #(#fields),* }
+        );
 
-        (fields, definitions)
+        (body, definitions)
     }
 }
 
 impl Unpack for FieldsUnnamed {
-    type Output = (Vec<TokenStream>, Vec<TokenStream>);
+    type Output = (TokenStream, Vec<TokenStream>);
+    //             ^body        ^definitions
     fn unpack(self) -> Self::Output {
         let mut fields = vec![];
         let mut definitions = vec![];
@@ -305,7 +325,11 @@ impl Unpack for FieldsUnnamed {
                 }
             }
         }
-
-        (fields, definitions)
+        
+        let body = quote!(
+            ( #(#fields),* )
+        );
+        
+        (body, definitions)
     }
 }

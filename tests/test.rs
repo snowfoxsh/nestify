@@ -24,3 +24,20 @@ fn please_work() {
         }
     );
 }
+
+#[test]
+fn enum_test() {
+    nest! {
+        enum Outside {
+            Empty,
+            Tuple(Option<i32>, i32, enum Nested1 { }),
+            Named {
+                a: i32,
+                b: Option<i32>,
+                c: enum Nested2 {
+                    Tuple2(enum Nested3 {})
+                }
+            }
+        }
+    }
+}
