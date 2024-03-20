@@ -70,7 +70,7 @@ pub struct SpecialVariant {
     pub discriminant: Option<(Token![=], Expr)>,
 }
 
-// todo: i think discriminant should be in another struct, but thats low priority
+// todo: i think discriminant should be in another struct, but that's low priority
 // pub struct Discriminant {
 //     pub equals: Token![=],
 //     pub expr: Expr,
@@ -337,12 +337,3 @@ impl SpecialField {
         })
     }
 }
-
-// todo: actually refactor a bunch of stuff
-
-
-// function with an end can done with diffrent levels of compedence
-// unlike other animals humans have the ability to think
-// thats what makes us what we are
-
-// any function can be better or wores therefore reasoning can be done better or worse

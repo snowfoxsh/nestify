@@ -7,7 +7,7 @@ use crate::ty::SpecialType;
 // todo: add attribute support
 pub fn unpack(def: Special) -> proc_macro2::TokenStream {
     let attrs = def.attrs;
-    let visablity = def.vis;
+    let visibility = def.vis;
     let ident = def.ident; // the definition name/type
     let generics = def.generics;
 
@@ -45,8 +45,8 @@ pub fn unpack(def: Special) -> proc_macro2::TokenStream {
                             }
                             // recuse down the parse stack
                             SpecialType::Def(special) => {
-                                // trust that ty will be a defintion step
-                                let ty = &special.ident; // dont move so no clone!
+                                // trust that ty will be a definition step
+                                let ty = &special.ident; // don't move so no clone!
                                 fields.push(quote!(
                                     // #(#attrs)* todo
                                     #vis #ident : #ty
@@ -69,7 +69,7 @@ pub fn unpack(def: Special) -> proc_macro2::TokenStream {
                     // - insert our previous definitions behind the struct
                     quote!(
                         // todo attrs
-                        #visablity struct #ident #generics {
+                        #visibility struct #ident #generics {
                             #(#fields),*
                         }
 
@@ -95,7 +95,7 @@ pub fn unpack(def: Special) -> proc_macro2::TokenStream {
                         // this is an unnamed variant so there should never Some(T)
                         let _ident = field.ident; // todo: warn if this is not none
 
-                        // branch off based on if type is defined or should be defined
+                        // branch off based on if a type is defined or should be defined
                         match field.ty {
                             SpecialType::Type(ty) => {
                                 fields.push(quote!(
@@ -119,7 +119,7 @@ pub fn unpack(def: Special) -> proc_macro2::TokenStream {
 
                     quote!(
                         // todo attrs
-                        #visablity struct #ident #generics (
+                        #visibility struct #ident #generics (
                             #(#fields),*
                         );
 
@@ -128,7 +128,7 @@ pub fn unpack(def: Special) -> proc_macro2::TokenStream {
                 }
                 SpecialFields::Unit => {
                     quote!(
-                        #visablity struct #ident #generics;
+                        #visibility struct #ident #generics;
                     )
                 }
             }
@@ -150,7 +150,7 @@ impl Unpack for Special {
     type Output = TokenStream;
     fn unpack(self) -> Self::Output {
         let attrs = self.attrs;
-        let visablity = self.vis;
+        let visibility = self.vis;
         let ident = self.ident; // the definition name/type
         let generics = self.generics;
 
@@ -167,7 +167,7 @@ impl Unpack for Special {
                     // - insert our previous definitions behind the struct
                     quote!(
                         #(#attrs)*
-                        #visablity struct #ident #generics #body
+                        #visibility struct #ident #generics #body
 
                         #(#definitions)*
                     )
@@ -177,7 +177,7 @@ impl Unpack for Special {
 
                     quote!(
                         #(#attrs)*
-                        #visablity struct #ident #generics #body;
+                        #visibility struct #ident #generics #body;
 
                         #(#definitions)*
                     )
@@ -185,7 +185,7 @@ impl Unpack for Special {
                 SpecialFields::Unit => {
                     quote!(
                         #(#attrs)*
-                        #visablity struct #ident #generics;
+                        #visibility struct #ident #generics;
                     )
                 }
             }
@@ -206,7 +206,7 @@ impl Unpack for Special {
                 
                 quote!(
                     #(#attrs)*
-                    #visablity enum #ident #generics {
+                    #visibility enum #ident #generics {
                         #( #variants ),*
                     }
                     
@@ -260,8 +260,8 @@ impl Unpack for FieldsNamed {
                 }
                 // recuse down the parse stack
                 SpecialType::Def(special) => {
-                    // trust that ty will be a defintion step
-                    let ty = &special.ident; // dont move so no clone!
+                    // trust that ty will be a definition step
+                    let ty = &special.ident; // don't move so no clone!
                     fields.push(quote!(
                                     // #(#attrs)* todo
                                     #vis #ident : #ty
@@ -304,7 +304,7 @@ impl Unpack for FieldsUnnamed {
             // this is an unnamed variant so there should never Some(T)
             let _ident = field.ident; // todo: warn if this is not none
 
-            // branch off based on if type is defined or should be defined
+            // branch off based on if a type is defined or should be defined
             match field.ty {
                 SpecialType::Type(ty) => {
                     fields.push(quote!(
