@@ -173,6 +173,7 @@ impl Unpack for Special {
                     )
                 }
                 SpecialFields::Unnamed(unnamed) => {
+                    // unpack our unnamed structure body, also collecting the recursive definitions
                     let (body, definitions) = unnamed.unpack();
 
                     quote!(
@@ -183,6 +184,8 @@ impl Unpack for Special {
                     )
                 }
                 SpecialFields::Unit => {
+                    // no unpacking required here, since there are no types
+                    // in other words, this branch is always a leaf
                     quote!(
                         #(#attrs)*
                         #visibility struct #ident #generics;
@@ -252,21 +255,24 @@ impl Unpack for FieldsNamed {
             match field.ty {
                 // leaf node aka non-special type => dont recurse
                 SpecialType::Type(ty) => {
-                    fields.push(quote!(
-                                    // #(#attrs)* todo
-                                    #vis #ident : #ty
-                                    // todo: add fish syntax
-                                ));
+                    // todo: add fish syntax
+                    let field = quote!(
+                        #(#attrs)* 
+                        #vis #ident : #ty
+                    );
+                    fields.push(field);
                 }
                 // recuse down the parse stack
                 SpecialType::Def(special) => {
                     // trust that ty will be a definition step
                     let ty = &special.ident; // don't move so no clone!
-                    fields.push(quote!(
-                                    // #(#attrs)* todo
-                                    #vis #ident : #ty
-                                    // todo: add fish syntax
-                                ));
+
+                    // todo: add fish syntax
+                    let field = quote!(
+                        #(#attrs)* 
+                        #vis #ident : #ty
+                    );
+                    fields.push(field);
 
                     // unpack the definition of the type
                     // then add it to the definition buffer
@@ -307,19 +313,21 @@ impl Unpack for FieldsUnnamed {
             // branch off based on if a type is defined or should be defined
             match field.ty {
                 SpecialType::Type(ty) => {
-                    fields.push(quote!(
-                                    // #(#attrs)* todo
-                                    #vis #ty
-                                ));
+                    let field = quote!(
+                        #(#attrs)* 
+                        #vis #ty
+                    );
+                    fields.push(field);
                 }
                 SpecialType::Def(special) => {
                     let ty = &special.ident;
 
-                    fields.push(quote!(
-                                    // #(#attrs)* todo
-                                    #vis #ty
-                                ));
-
+                    let field = quote!(
+                        #(#attrs)*
+                        #vis #ty
+                    );
+                    fields.push(field);
+                    
                     let definition = special.unpack();
                     definitions.push(definition);
                 }

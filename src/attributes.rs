@@ -114,6 +114,15 @@ impl ToTokens for TypeApplication {
     }
 }
 
+impl ToTokens for FieldAttribute {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            FieldAttribute::Type(a) => a.to_tokens(tokens),
+            FieldAttribute::Item(a) => a.to_tokens(tokens),
+        }
+    }
+}
+
 // note: it is preferred that >#[...] comes after #[...]
 
 // nest! {

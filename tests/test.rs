@@ -41,3 +41,15 @@ fn enum_test() {
         }
     }
 }
+
+#[test]
+fn attribute_test() {
+    nest! {
+        #[derive(Debug)]
+        struct Outside {
+            f: #[derive(Debug)] struct Inside {
+                
+            }
+        }
+    }
+}
