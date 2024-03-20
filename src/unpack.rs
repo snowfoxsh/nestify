@@ -166,7 +166,7 @@ impl Unpack for Special {
                     // - define ident and specify generics
                     // - insert our previous definitions behind the struct
                     quote!(
-                        // todo attrs
+                        #(#attrs)*
                         #visablity struct #ident #generics #body
 
                         #(#definitions)*
@@ -176,7 +176,7 @@ impl Unpack for Special {
                     let (body, definitions) = unnamed.unpack();
 
                     quote!(
-                        // todo attrs
+                        #(#attrs)*
                         #visablity struct #ident #generics #body;
 
                         #(#definitions)*
@@ -184,7 +184,7 @@ impl Unpack for Special {
                 }
                 SpecialFields::Unit => {
                     quote!(
-                        // todo attrs
+                        #(#attrs)*
                         #visablity struct #ident #generics;
                     )
                 }
@@ -205,7 +205,7 @@ impl Unpack for Special {
                 }
                 
                 quote!(
-                    // todo attrs
+                    #(#attrs)*
                     #visablity enum #ident #generics {
                         #( #variants ),*
                     }
