@@ -7,10 +7,11 @@ fn please_work() {
     nest!(
         struct Hello {
             pub o: struct Another {
-                #[derive(Debug)]
                 s: struct A {
                     a: struct B {
+                        asdfs: struct BB {
 
+                        },
                     },
                     c: i32,
                     d: struct D {

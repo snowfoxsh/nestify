@@ -43,7 +43,7 @@ pub struct BodyStruct {
 pub struct BodyEnum {
     enum_token: Token![enum],
     brace_token: token::Brace,
-    variants: Punctuated<SpecialVariant, Token![,]>
+    pub variants: Punctuated<SpecialVariant, Token![,]>
 }
 
 // struct BodyUnion {
