@@ -140,7 +140,7 @@ pub fn unpack(def: Special) -> proc_macro2::TokenStream {
     }
 }
 
-trait Unpack {
+pub(crate) trait Unpack {
     type Output;
     fn unpack(self) -> Self::Output;
 }
@@ -209,9 +209,9 @@ impl Unpack for SpecialFields {
     type Output = TokenStream;
     fn unpack(self) -> Self::Output {
         match self {
-            SpecialFields::Named(_) => {}
-            SpecialFields::Unnamed(_) => {}
-            SpecialFields::Unit => {}
+            SpecialFields::Named(_) => {todo!()}
+            SpecialFields::Unnamed(_) => {todo!()}
+            SpecialFields::Unit => {todo!()}
         }
     }
 }

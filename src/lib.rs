@@ -1,6 +1,7 @@
 use proc_macro_error::{abort_call_site, proc_macro_error};
 use syn::parse_macro_input;
 use crate::special_data::Special;
+use crate::unpack::Unpack;
 
 mod special_data;
 mod attributes;
