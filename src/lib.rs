@@ -14,18 +14,10 @@ mod discriminant;
 
 // todo: add a warning to the macro shows rules for struct UsesSemi;
 // todo: fix where clauses
-
-
-/*
-// --- NOTES --- //
-- A structure that is bare eg: struct MyStruct; should be expanded to struct MyStruct {}
-- There should be no need for semi colons because of this
-- the comma should act as a semi colon in the parse
-
-
-// --- NOTES --- //
- */
-
+// todo: fix issue where `struct { };` "unexpected `;`" error is not spanned correctly
+// todo: add diagnostic warnings and possibly errors behind a feature flag for nightly users
+// todo: use `quote_spanned!` when necessary
+// todo: write more tests
 
 #[proc_macro]
 #[proc_macro_error]
