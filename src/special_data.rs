@@ -1,9 +1,10 @@
 use proc_macro_error::abort;
 use syn::punctuated::Punctuated;
-use syn::{braced, Expr, FieldMutability, Generics, Ident, parenthesized, Token, token, Visibility, WhereClause};
+use syn::{braced, FieldMutability, Generics, Ident, parenthesized, Token, token, Visibility, WhereClause};
 use syn::ext::IdentExt;
 use syn::parse::{Parse, ParseStream};
 use crate::attributes::{FieldAttribute, ItemAttribute};
+use crate::discriminant::Discriminant;
 use crate::fish::GenFish;
 use crate::ty::SpecialType;
 
@@ -67,15 +68,8 @@ pub struct SpecialVariant {
     pub fields: SpecialFields,
 
     /// Explicit discriminant: `Variant = 1`
-    pub discriminant: Option<(Token![=], Expr)>,
+    pub discriminant: Option<Discriminant>,
 }
-
-// todo: i think discriminant should be in another struct, but that's low priority
-// pub struct Discriminant {
-//     pub equals: Token![=],
-//     pub expr: Expr,
-// }
-
 
 /// Data stored in an enum variant or structure
 pub enum SpecialFields {
@@ -243,9 +237,10 @@ impl Parse for SpecialVariant {
             SpecialFields::Unit
         };
         let discriminant = if input.peek(Token![=]) {
-            let eq_token: Token![=] = input.parse()?;
-            let discriminant: Expr = input.parse()?;
-            Some((eq_token, discriminant))
+            Some(Discriminant {
+                eq_token: input.parse()?,
+                expr: input.parse()?
+            })
         } else {
             None
         };

@@ -65,11 +65,12 @@ impl Unpack for Special {
                     let (field_body, mut definitions) = variant.fields.unpack();
                     accumulated_definitions.append(&mut definitions);
                     // todo: get variant working
-                    // let discriminant = variant.discriminant;
+                    let discriminant = variant.discriminant;
                     
                     let variant = quote!(
                         #(#attrs)*
                         #ident #field_body
+                        #discriminant
                     );
                     variants.push(variant);
                 }
