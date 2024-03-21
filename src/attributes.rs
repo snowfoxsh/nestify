@@ -1,18 +1,59 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{Attribute, bracketed, Meta, Token, token};
-use syn::parse::ParseStream;
+use syn::{bracketed, Error, LitInt, Meta, Token, token};
+use syn::parse::{Parse, ParseStream};
+
+pub enum FieldAttribute {
+    Type(TypeApplication),
+    Item(ItemAttribute),
+}
 
 pub struct ItemAttribute {
     pub pound_token: Token![#],
     pub bracket_token: token::Bracket,
     pub meta: Meta,
-    pub star_token: Option<Token![*]>,
+    pub modifier: Option<AttributeModifier>,
 }
 
-pub enum FieldAttribute {
-    Type(TypeApplication),
-    Item(ItemAttribute),
+pub struct TypeApplication {
+    pub pound_token: Token![#],
+    pub ident_token: Token![>],
+    pub bracket_token: token::Bracket,
+    pub meta: Meta,
+    pub modifier: Option<AttributeModifier>,
+}
+
+pub enum AttributeModifier {
+    Star (Token![*]),
+    Slash (Token![/]),
+    Minus (Token![-]),
+    Plus {
+        plus_token: Token![+],
+        // note about depth, we should try to throw a warning if the depth value
+        // doesn't reach a leaf
+        // ie: it is too large
+        depth: usize
+    },
+}
+
+impl Parse for AttributeModifier {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        let lookahead = input.lookahead1();
+        if lookahead.peek(Token![*]) {
+            input.parse().map(Self::Star)
+        } else if lookahead.peek(Token![/]) {
+            input.parse().map(Self::Slash)
+        } else if lookahead.peek(Token![-]) {
+            input.parse().map(Self::Minus)
+        } else if lookahead.peek(Token![+]) {
+            Ok(Self::Plus {
+                plus_token: input.parse()?,
+                depth: input.parse::<LitInt>()?.base10_parse()?,
+            })
+        } else {
+            Err(lookahead.error())
+        }
+    }
 }
 
 impl FieldAttribute {
@@ -26,32 +67,15 @@ impl FieldAttribute {
 
     pub fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
         if input.peek(Token![#]) && input.peek2(Token![>]) {
-            let content;
-            Ok(Self::Type(TypeApplication {
-                pound_token: input.parse()?,
-                indent_token: input.parse()?,
-                bracket_token: bracketed!(content in input),
-                meta: content.parse()?,
-                star_token: input.parse()?,
-            }))
-        } else if input.peek(Token![#]) {
-            Ok(Self::Item(input.call(ItemAttribute::parse_single_outer)?))
+            Ok(Self::Type(input.call(TypeApplication::single_parse_outer)?))
         } else {
-            // todo make this spanned
-            // panic!("expected an attribute")
-            Err(input.error("Expected an attribute"))
+            Ok(Self::Item(input.call(ItemAttribute::parse_single_outer)?))
         }
     }
 }
 
 
-pub struct TypeApplication {
-    pub pound_token: Token![#],
-    pub indent_token: Token![>],
-    pub bracket_token: token::Bracket,
-    pub meta: Meta,
-    pub star_token: Option<Token![*]>,
-}
+
 
 impl TypeApplication {
     fn parse_outer(input: ParseStream) -> syn::Result<Vec<Self>> {
@@ -64,12 +88,27 @@ impl TypeApplication {
 
     fn single_parse_outer(input: ParseStream) -> syn::Result<Self> {
         let content;
+        let pound_token = input.parse()?;
+        let ident_token  = input.parse()?;
+        let bracket_token = bracketed!(content in input);
+        let meta = content.parse()?;
+        
+        let modifier = if  
+            input.peek(Token![*]) ||
+            input.peek(Token![/]) ||
+            input.peek(Token![-]) ||
+            input.peek(Token![+]) {
+            Some(input.parse()?)
+        } else {
+            None
+        };
+
         Ok(Self {
-            pound_token: input.parse()?,
-            indent_token: input.parse()?,
-            bracket_token: bracketed!(content in input),
-            meta: content.parse()?,
-            star_token: input.parse()?
+            pound_token,
+            ident_token,
+            bracket_token,
+            meta,
+            modifier,
         })
     }
 }
@@ -80,16 +119,31 @@ impl ItemAttribute {
         while input.peek(Token![#]) && !input.peek2(Token![>]) {
             attrs.push(input.call(Self::parse_single_outer)?);
         }
+
         Ok(attrs)
     }
 
     fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
         let content;
+        let pound_token = input.parse()?;
+        let bracket_token = bracketed!(content in input);
+        let meta = content.parse()?;
+
+        let modifier = if
+            input.peek(Token![*]) ||
+            input.peek(Token![/]) ||
+            input.peek(Token![-]) ||
+            input.peek(Token![+]) {
+            Some(input.parse()?)
+        } else {
+            None
+        };
+
         Ok(Self {
-            pound_token: input.parse()?,
-            bracket_token: bracketed!(content in input),
-            meta: content.parse()?,
-            star_token: input.parse()?
+            pound_token,
+            bracket_token,
+            meta,
+            modifier,
         })
     }
 }
