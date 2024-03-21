@@ -3,11 +3,14 @@ use syn::parse_macro_input;
 use crate::special_data::Special;
 use crate::unpack::Unpack;
 
-mod special_data;
-mod attributes;
-mod ty;
-mod fish;
-mod unpack;
+#[cfg(test)]
+mod tests;
+pub(crate) mod special_data;
+pub(crate) mod attributes;
+pub(crate) mod ty;
+pub(crate) mod fish;
+pub(crate) mod unpack;
+mod discriminant;
 
 // todo: add a warning to the macro shows rules for struct UsesSemi;
 
