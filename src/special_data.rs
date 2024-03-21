@@ -190,11 +190,12 @@ fn parse_data_struct(
             lookahead = input.lookahead1();
         }
 
+        // parse an optional semi
         if lookahead.peek(Token![;]) {
             let semi = input.parse()?;
             Ok((where_clause, SpecialFields::Unnamed(fields), Some(semi)))
         } else {
-            Err(lookahead.error())
+            Ok((where_clause, SpecialFields::Unnamed(fields), None))
         }
     } else if lookahead.peek(token::Brace) {
         let fields: FieldsNamed = input.parse()?;
@@ -204,7 +205,7 @@ fn parse_data_struct(
         let semi = input.parse()?;
         Ok((where_clause, SpecialFields::Unit, Some(semi)))
     } else {
-        Err(lookahead.error())
+        Ok((where_clause, SpecialFields::Unit, None))
     }
 }
 

@@ -13,7 +13,7 @@ pub(crate) mod unpack;
 mod discriminant;
 
 // todo: add a warning to the macro shows rules for struct UsesSemi;
-
+// todo: fix where clauses
 
 
 /*
@@ -43,7 +43,6 @@ pub fn nest(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     def.unpack().into()
     // quote!(struct Works {}).into()
 }
-
 
 
 /*
