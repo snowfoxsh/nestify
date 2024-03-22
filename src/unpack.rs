@@ -1,18 +1,23 @@
 use proc_macro2::TokenStream;
 use quote::quote;
-use crate::special_data::{Body, FieldsNamed, FieldsUnnamed, Special, SpecialFields, SpecialVariant};
+use crate::special_data::{Body, FieldsNamed, FieldsUnnamed, Special, SpecialFields};
 use crate::ty::SpecialType;
+use crate::unpack_context::UnpackContext;
 
 pub(crate) trait Unpack {
     type Output;
-    fn unpack(self) -> Self::Output;
+    // fn unpack(self, context: UnpackContext) -> Self::Output;
+    fn unpack(self, context: UnpackContext) -> Self::Output;
 }
 
 impl Unpack for Special {
 
     type Output = TokenStream;
-    fn unpack(self) -> Self::Output {
-        let attrs = self.attrs;
+    fn unpack(self, mut unpack_context: UnpackContext) -> Self::Output {
+        let attrs = unpack_context.modify_composite(self.attrs);
+        // let attrs = self.attrs;
+        
+        
         let visibility = self.vis;
         let ident = self.ident; // the definition name/type
         let generics = self.generics;
@@ -22,7 +27,7 @@ impl Unpack for Special {
         match self.body {
             Body::Struct(body_struct) => match body_struct.fields {
                 SpecialFields::Named(named) => {
-                    let (body, definitions) = named.unpack();
+                    let (body, definitions) = named.unpack(unpack_context);
 
                     // define our current ctx struct
                     // - define attributes
@@ -37,7 +42,7 @@ impl Unpack for Special {
                 }
                 SpecialFields::Unnamed(unnamed) => {
                     // unpack our unnamed structure body, also collecting the recursive definitions
-                    let (body, definitions) = unnamed.unpack();
+                    let (body, definitions) = unnamed.unpack(unpack_context);
 
                     quote!(
                         #(#attrs)*
@@ -62,7 +67,7 @@ impl Unpack for Special {
                 for variant in body_enum.variants {
                     let attrs = variant.attrs;
                     let ident = variant.ident;
-                    let (field_body, mut definitions) = variant.fields.unpack();
+                    let (field_body, mut definitions) = variant.fields.unpack(unpack_context.clone());
                     accumulated_definitions.append(&mut definitions);
                     // todo: get variant working
                     let discriminant = variant.discriminant;
@@ -92,10 +97,10 @@ impl Unpack for Special {
 impl Unpack for SpecialFields {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext) -> Self::Output {
         match self {
-            SpecialFields::Named(named) => named.unpack(),
-            SpecialFields::Unnamed(unnamed) => unnamed.unpack(),
+            SpecialFields::Named(named) => named.unpack(unpack_context),
+            SpecialFields::Unnamed(unnamed) => unnamed.unpack(unpack_context),
             SpecialFields::Unit => (TokenStream::default(), Vec::<TokenStream>::default())
         }
     }
@@ -104,7 +109,7 @@ impl Unpack for SpecialFields {
 impl Unpack for FieldsNamed {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext) -> Self::Output {
         // fields buffer load each
         let mut fields = vec![];
         let mut definitions = vec![];
@@ -146,7 +151,7 @@ impl Unpack for FieldsNamed {
                     // then add it to the definition buffer
                     // this could be one or more definition
                     // we don't care
-                    let definition = special.unpack();
+                    let definition = special.unpack(unpack_context.clone());
                     definitions.push(definition);
                 }
             }
@@ -163,7 +168,7 @@ impl Unpack for FieldsNamed {
 impl Unpack for FieldsUnnamed {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext) -> Self::Output {
         let mut fields = vec![];
         let mut definitions = vec![];
 
@@ -196,7 +201,7 @@ impl Unpack for FieldsUnnamed {
                     );
                     fields.push(field);
                     
-                    let definition = special.unpack();
+                    let definition = special.unpack(unpack_context.clone());
                     definitions.push(definition);
                 }
             }

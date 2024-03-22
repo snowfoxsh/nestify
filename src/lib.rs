@@ -2,6 +2,7 @@ use proc_macro_error::{abort_call_site, proc_macro_error};
 use syn::parse_macro_input;
 use crate::special_data::Special;
 use crate::unpack::Unpack;
+use crate::unpack_context::UnpackContext;
 
 #[cfg(test)]
 mod tests;
@@ -10,7 +11,8 @@ pub(crate) mod attributes;
 pub(crate) mod ty;
 pub(crate) mod fish;
 pub(crate) mod unpack;
-mod discriminant;
+pub(crate) mod discriminant;
+pub(crate) mod unpack_context;
 
 // todo: add a warning to the macro shows rules for struct UsesSemi;
 // todo: fix where clauses
@@ -18,6 +20,7 @@ mod discriminant;
 // todo: add diagnostic warnings and possibly errors behind a feature flag for nightly users
 // todo: use `quote_spanned!` when necessary
 // todo: write more tests
+// todo: add warning to put #>[meta] after #[meta]
 
 #[proc_macro]
 #[proc_macro_error]
@@ -32,7 +35,7 @@ pub fn nest(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     let def = parse_macro_input!(input as Special);
 
     // unpack::unpack(def).into()
-    def.unpack().into()
+    def.unpack(UnpackContext::default()).into()
     // quote!(struct Works {}).into()
 }
 

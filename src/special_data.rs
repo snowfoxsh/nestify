@@ -3,7 +3,7 @@ use syn::punctuated::Punctuated;
 use syn::{braced, FieldMutability, Generics, Ident, parenthesized, Token, token, Visibility, WhereClause};
 use syn::ext::IdentExt;
 use syn::parse::{Parse, ParseStream};
-use crate::attributes::{FieldAttribute, ItemAttribute};
+use crate::attributes::{FieldAttribute, CompositeAttribute, ParseAttribute};
 use crate::discriminant::Discriminant;
 use crate::fish::GenFish;
 use crate::ty::SpecialType;
@@ -19,7 +19,7 @@ use crate::ty::SpecialType;
 /// The base type definition. It allows recursive definition expansions therefore
 /// it is *Special*
 pub struct Special {
-    pub attrs: Vec<ItemAttribute>, // used to be RecAttribute
+    pub attrs: Vec<CompositeAttribute>, // used to be RecAttribute
     pub vis: Visibility,
     pub ident: Ident,
     pub generics: Generics,
@@ -121,7 +121,7 @@ pub struct SpecialField {
 
 impl Parse for Special {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        let attrs = input.call(ItemAttribute::parse_outer)?;
+        let attrs = input.call(CompositeAttribute::parse_outer)?;
         let vis = input.parse::<Visibility>()?;
 
         let lookahead = input.lookahead1();
