@@ -1,16 +1,16 @@
-use proc_macro_error::abort;
-use syn::punctuated::Punctuated;
-use syn::{braced, FieldMutability, Generics, Ident, parenthesized, Token, token, Visibility, WhereClause};
-use syn::ext::IdentExt;
-use syn::parse::{Parse, ParseStream};
-use crate::attributes::{FieldAttribute, CompositeAttribute, ParseAttribute};
+use crate::attributes::{CompositeAttribute, FieldAttribute, ParseAttribute};
 use crate::discriminant::Discriminant;
 use crate::fish::GenFish;
 use crate::ty::SpecialType;
-
+use proc_macro_error::abort;
+use syn::ext::IdentExt;
+use syn::parse::{Parse, ParseStream};
+use syn::punctuated::Punctuated;
+use syn::{
+    braced, parenthesized, token, FieldMutability, Generics, Ident, Token, Visibility, WhereClause,
+};
 
 // most of the comments are stolen from the `syn` crate doc because im lazzzzzzy
-
 
 // --- NOTES --- //
 
@@ -23,7 +23,7 @@ pub struct Special {
     pub vis: Visibility,
     pub ident: Ident,
     pub generics: Generics,
-    pub body: Body
+    pub body: Body,
 }
 
 /// The body of a definition; Contains the data for the item
@@ -37,14 +37,14 @@ pub enum Body {
 pub struct BodyStruct {
     struct_token: Token![struct],
     pub fields: SpecialFields,
-    semi_token: Option<Token![;]>
+    semi_token: Option<Token![;]>,
 }
 
 /// Enumeration Body aka Data in syn
 pub struct BodyEnum {
     enum_token: Token![enum],
     brace_token: token::Brace,
-    pub variants: Punctuated<SpecialVariant, Token![,]>
+    pub variants: Punctuated<SpecialVariant, Token![,]>,
 }
 
 // struct BodyUnion {
@@ -95,13 +95,13 @@ pub enum SpecialFields {
 /// }`
 pub struct FieldsNamed {
     pub brace_token: token::Brace,
-    pub named: Punctuated<SpecialField, Token![,]>
+    pub named: Punctuated<SpecialField, Token![,]>,
 }
 
 /// Unnamed fields of a tuple struct or tuple variant such as `Some(T)`.
 pub struct FieldsUnnamed {
     pub paren_token: token::Paren,
-    pub unnamed: Punctuated<SpecialField, Token![,]>
+    pub unnamed: Punctuated<SpecialField, Token![,]>,
 }
 
 // note: refactor to a new file eventually
@@ -117,7 +117,6 @@ pub struct SpecialField {
     pub colon_token: Option<Token![:]>,
     pub ty: SpecialType,
 }
-
 
 impl Parse for Special {
     fn parse(input: ParseStream) -> syn::Result<Self> {
@@ -142,7 +141,7 @@ impl Parse for Special {
                     struct_token,
                     fields,
                     semi_token: semi,
-                })
+                }),
             })
         } else if lookahead.peek(Token![enum]) {
             let enum_token = input.parse::<Token![enum]>()?;
@@ -160,8 +159,8 @@ impl Parse for Special {
                 body: Body::Enum(BodyEnum {
                     enum_token,
                     brace_token: brace,
-                    variants
-                })
+                    variants,
+                }),
             })
         } else if lookahead.peek(Token![union]) {
             Err(input.error("unions remain unimplemented"))
@@ -214,8 +213,8 @@ fn parse_data_enum(
 ) -> syn::Result<(
     Option<WhereClause>,
     token::Brace,
-    Punctuated<SpecialVariant, Token![,]>)>
-{
+    Punctuated<SpecialVariant, Token![,]>,
+)> {
     let where_clause = input.parse()?;
 
     let content;
@@ -240,7 +239,7 @@ impl Parse for SpecialVariant {
         let discriminant = if input.peek(Token![=]) {
             Some(Discriminant {
                 eq_token: input.parse()?,
-                expr: input.parse()?
+                expr: input.parse()?,
             })
         } else {
             None
@@ -299,8 +298,9 @@ impl SpecialField {
 
         let ty: SpecialType = if unnamed_field
             && (input.peek(Token![struct])
-            || input.peek(Token![union]) && input.peek2(token::Brace)) {
-            let span= input.span();
+                || input.peek(Token![union]) && input.peek2(token::Brace))
+        {
+            let span = input.span();
             abort!(
                 span,
                 "Not implemented Yet";
@@ -310,19 +310,19 @@ impl SpecialField {
             input.parse()?
         };
 
-        Ok( SpecialField {
+        Ok(SpecialField {
             attrs,
             vis,
             mutability: FieldMutability::None,
             ident: Some(ident),
             fish,
             colon_token: Some(colon_token),
-            ty
+            ty,
         })
     }
 
     pub fn parse_unnamed(input: ParseStream) -> syn::Result<Self> {
-        Ok( SpecialField {
+        Ok(SpecialField {
             attrs: input.call(FieldAttribute::parse_outer)?,
             vis: input.parse()?,
             mutability: FieldMutability::None,

@@ -1,6 +1,6 @@
-use syn::{Expr, Token};
-use quote::{ToTokens};
 use proc_macro2::TokenStream;
+use quote::ToTokens;
+use syn::{Expr, Token};
 
 pub struct Discriminant {
     pub eq_token: Token![=],

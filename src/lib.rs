@@ -1,17 +1,17 @@
-use proc_macro_error::{abort_call_site, proc_macro_error};
-use syn::parse_macro_input;
 use crate::special_data::Special;
 use crate::unpack::Unpack;
 use crate::unpack_context::UnpackContext;
+use proc_macro_error::{abort_call_site, proc_macro_error};
+use syn::parse_macro_input;
 
+pub(crate) mod attributes;
+pub(crate) mod discriminant;
+pub(crate) mod fish;
+pub(crate) mod special_data;
 #[cfg(test)]
 mod tests;
-pub(crate) mod special_data;
-pub(crate) mod attributes;
 pub(crate) mod ty;
-pub(crate) mod fish;
 pub(crate) mod unpack;
-pub(crate) mod discriminant;
 pub(crate) mod unpack_context;
 
 // todo: add a warning to the macro shows rules for struct UsesSemi;
@@ -38,7 +38,6 @@ pub fn nest(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     def.unpack(UnpackContext::default()).into()
     // quote!(struct Works {}).into()
 }
-
 
 /*
 nest! {

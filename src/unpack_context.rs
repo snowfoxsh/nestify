@@ -9,73 +9,76 @@ impl UnpackContext {
     pub fn modify_composite(&mut self, attributes: Vec<CompositeAttribute>) -> Vec<Attribute> {
         let mut freeze = self.inherited.clone();
 
-        let current = attributes.into_iter().filter_map(|ca| {
-            // handle standard attribute
-            let Some(modifier) = &ca.modifier else {
-                let a: Attribute = ca.into();
-
-                if freeze.contains(&a) {
-                    panic!("already in the stack");
-                    //todo: improve this error message
-                    // already defined so do something
-                }
-
-                return Some(a);
-            };
-
-            // handle attribute with modifier
-            match modifier {
-                AttributeModifier::Star(_) => {
+        let current = attributes
+            .into_iter()
+            .filter_map(|ca| {
+                // handle standard attribute
+                let Some(modifier) = &ca.modifier else {
                     let a: Attribute = ca.into();
 
-                    // already defined so lets error
                     if freeze.contains(&a) {
-                        panic!("already in the stack (*)")
-                        // todo: improve error msg
+                        panic!("already in the stack");
+                        //todo: improve this error message
+                        // already defined so do something
                     }
 
-                    // add attribute to the downstream stack
-                    self.inherited.push(a.clone());
-                    
-                    // return the attribute
-                    Some(a)
-                }
-                AttributeModifier::Slash(_) => {
-                    let a: Attribute = ca.into();
+                    return Some(a);
+                };
 
-                    // already defined so lets error
-                    if !freeze.contains(&a) {
-                        panic!("not in the stack, dont need to remove (/)");
+                // handle attribute with modifier
+                match modifier {
+                    AttributeModifier::Star(_) => {
+                        let a: Attribute = ca.into();
+
+                        // already defined so lets error
+                        if freeze.contains(&a) {
+                            panic!("already in the stack (*)")
+                            // todo: improve error msg
+                        }
+
+                        // add attribute to the downstream stack
+                        self.inherited.push(a.clone());
+
+                        // return the attribute
+                        Some(a)
                     }
-                    
-                    // remove from the future
-                    self.inherited.retain(|attr| attr != &a);
-                    
-                    // remove from freeze
-                    freeze.retain(|attr| attr != &a);
-                    
-                    // remove it from the current
-                    None
-                }
-                AttributeModifier::Minus(_) => {
-                    let a: Attribute = ca.into();
+                    AttributeModifier::Slash(_) => {
+                        let a: Attribute = ca.into();
 
-                    // not in the stack so cant remove, lets error
-                    if !freeze.contains(&a) {
-                        panic!("not in the stack, dont need to remove (-)");
+                        // already defined so lets error
+                        if !freeze.contains(&a) {
+                            panic!("not in the stack, dont need to remove (/)");
+                        }
+
+                        // remove from the future
+                        self.inherited.retain(|attr| attr != &a);
+
+                        // remove from freeze
+                        freeze.retain(|attr| attr != &a);
+
+                        // remove it from the current
+                        None
                     }
-                    
-                    // dont remove it from the future
+                    AttributeModifier::Minus(_) => {
+                        let a: Attribute = ca.into();
 
-                    // remove from freeze
-                    freeze.retain(|attr| attr != &a);
+                        // not in the stack so cant remove, lets error
+                        if !freeze.contains(&a) {
+                            panic!("not in the stack, dont need to remove (-)");
+                        }
 
-                    // remove it from the current 
-                    None
+                        // dont remove it from the future
+
+                        // remove from freeze
+                        freeze.retain(|attr| attr != &a);
+
+                        // remove it from the current
+                        None
+                    }
                 }
-            }
-        }).collect();
-        
+            })
+            .collect();
+
         [freeze, current].concat()
     }
 }

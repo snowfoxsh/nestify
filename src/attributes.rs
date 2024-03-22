@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
-use syn::{bracketed, LitInt, Meta, Token, token};
 use syn::parse::{Parse, ParseStream};
+use syn::{bracketed, token, LitInt, Meta, Token};
 
 /// ```
 /// // In structs
@@ -65,7 +65,6 @@ pub trait ParseAttribute: Sized {
     fn parse_single_outer(input: ParseStream) -> syn::Result<Self>;
 }
 
-
 impl Parse for AttributeModifier {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let lookahead = input.lookahead1();
@@ -92,7 +91,6 @@ impl ParseAttribute for Attribute {
     }
 }
 
-
 impl ParseAttribute for FieldAttribute {
     fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
         if input.peek(Token![#]) && input.peek2(Token![>]) {
@@ -103,7 +101,6 @@ impl ParseAttribute for FieldAttribute {
     }
 }
 
-
 impl ParseAttribute for NestedAttribute {
     fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
         let content;
@@ -112,11 +109,11 @@ impl ParseAttribute for NestedAttribute {
         let bracket_token = bracketed!(content in input);
         let meta = content.parse()?;
 
-        let modifier =
-        if  input.peek(Token![*]) ||
-            input.peek(Token![/]) ||
-            input.peek(Token![-]) ||
-            input.peek(Token![+]) {
+        let modifier = if input.peek(Token![*])
+            || input.peek(Token![/])
+            || input.peek(Token![-])
+            || input.peek(Token![+])
+        {
             Some(input.parse()?)
         } else {
             None
@@ -139,11 +136,11 @@ impl ParseAttribute for CompositeAttribute {
         let bracket_token = bracketed!(content in input);
         let meta = content.parse()?;
 
-        let modifier =
-        if  input.peek(Token![*]) ||
-            input.peek(Token![/]) ||
-            input.peek(Token![-]) ||
-            input.peek(Token![+]) {
+        let modifier = if input.peek(Token![*])
+            || input.peek(Token![/])
+            || input.peek(Token![-])
+            || input.peek(Token![+])
+        {
             Some(input.parse()?)
         } else {
             None
@@ -162,9 +159,8 @@ impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.pound_token.to_tokens(tokens);
 
-        self.bracket_token.surround(tokens, |meta_tokens| {
-            self.meta.to_tokens(meta_tokens)
-        })
+        self.bracket_token
+            .surround(tokens, |meta_tokens| self.meta.to_tokens(meta_tokens))
     }
 }
 
@@ -172,9 +168,8 @@ impl ToTokens for CompositeAttribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.pound_token.to_tokens(tokens);
 
-        self.bracket_token.surround(tokens, |meta_tokens| {
-            self.meta.to_tokens(meta_tokens)
-        })
+        self.bracket_token
+            .surround(tokens, |meta_tokens| self.meta.to_tokens(meta_tokens))
     }
 }
 
@@ -182,9 +177,8 @@ impl ToTokens for NestedAttribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.pound_token.to_tokens(tokens);
 
-        self.bracket_token.surround(tokens, |meta_tokens| {
-            self.meta.to_tokens(meta_tokens)
-        })
+        self.bracket_token
+            .surround(tokens, |meta_tokens| self.meta.to_tokens(meta_tokens))
     }
 }
 
@@ -225,7 +219,7 @@ impl PartialEq<NestedAttribute> for Attribute {
 
 impl PartialEq<Attribute> for NestedAttribute {
     fn eq(&self, other: &Attribute) -> bool {
-       self.meta == other.meta 
+        self.meta == other.meta
     }
 }
 
@@ -237,9 +231,8 @@ impl PartialEq<CompositeAttribute> for Attribute {
 
 impl PartialEq<Attribute> for CompositeAttribute {
     fn eq(&self, other: &Attribute) -> bool {
-       self.meta == other.meta 
+        self.meta == other.meta
     }
 }
-
 
 // note: it is preferred that >#[...] comes after #[...]

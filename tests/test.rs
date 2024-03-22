@@ -9,12 +9,12 @@ fn es() {}
 fn please_work() {
     let s = 32;
     nest!(
-        #[derive(Debug)]
+        #[derive(Debug)]*
         struct Hello {
 
-            pub o: 
+            pub o:
             struct Another {
-                s: #[derive(Debug)] struct A {
+                s: struct A {
                     a: struct B {
                         asdfs: struct BB {
 
@@ -62,9 +62,7 @@ fn attribute_test() {
 }
 
 #[test]
-fn test_semis() {
-
-}
+fn test_semis() {}
 
 #[derive(Default)]
 enum AnEnum {

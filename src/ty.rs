@@ -1,6 +1,6 @@
-use syn::parse::{Parse, ParseStream};
-use syn::{Type};
 use crate::special_data::Special;
+use syn::parse::{Parse, ParseStream};
+use syn::Type;
 
 /// Can either be a normal type, or a type definition
 pub enum SpecialType {
@@ -19,4 +19,3 @@ impl Parse for SpecialType {
         }
     }
 }
-

@@ -1,6 +1,6 @@
-use syn::{Generics, Token};
 use syn::parse::{Parse, ParseStream};
 use syn::Turbofish;
+use syn::{Generics, Token};
 
 #[derive(Clone, Default)]
 pub struct GenFish {
@@ -10,9 +10,9 @@ pub struct GenFish {
 
 impl Parse for GenFish {
     fn parse(input: ParseStream) -> syn::Result<Self> {
-        Ok( GenFish {
+        Ok(GenFish {
             path_sep_token: input.parse()?,
-            generics: input.parse()?
+            generics: input.parse()?,
         })
     }
 }

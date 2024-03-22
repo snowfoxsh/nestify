@@ -1,8 +1,8 @@
-use proc_macro2::TokenStream;
-use quote::quote;
 use crate::special_data::{Body, FieldsNamed, FieldsUnnamed, Special, SpecialFields};
 use crate::ty::SpecialType;
 use crate::unpack_context::UnpackContext;
+use proc_macro2::TokenStream;
+use quote::quote;
 
 pub(crate) trait Unpack {
     type Output;
@@ -11,13 +11,11 @@ pub(crate) trait Unpack {
 }
 
 impl Unpack for Special {
-
     type Output = TokenStream;
     fn unpack(self, mut unpack_context: UnpackContext) -> Self::Output {
         let attrs = unpack_context.modify_composite(self.attrs);
         // let attrs = self.attrs;
-        
-        
+
         let visibility = self.vis;
         let ident = self.ident; // the definition name/type
         let generics = self.generics;
@@ -59,19 +57,20 @@ impl Unpack for Special {
                         #visibility struct #ident #generics;
                     )
                 }
-            }
+            },
             Body::Enum(body_enum) => {
                 let mut accumulated_definitions = vec![];
                 let mut variants = vec![];
-                
+
                 for variant in body_enum.variants {
                     let attrs = variant.attrs;
                     let ident = variant.ident;
-                    let (field_body, mut definitions) = variant.fields.unpack(unpack_context.clone());
+                    let (field_body, mut definitions) =
+                        variant.fields.unpack(unpack_context.clone());
                     accumulated_definitions.append(&mut definitions);
                     // todo: get variant working
                     let discriminant = variant.discriminant;
-                    
+
                     let variant = quote!(
                         #(#attrs)*
                         #ident #field_body
@@ -79,20 +78,19 @@ impl Unpack for Special {
                     );
                     variants.push(variant);
                 }
-                
+
                 quote!(
                     #(#attrs)*
                     #visibility enum #ident #generics {
                         #( #variants ),*
                     }
-                    
+
                     #(#accumulated_definitions)*
                 )
             }
         }
     }
 }
-
 
 impl Unpack for SpecialFields {
     type Output = (TokenStream, Vec<TokenStream>);
@@ -101,7 +99,7 @@ impl Unpack for SpecialFields {
         match self {
             SpecialFields::Named(named) => named.unpack(unpack_context),
             SpecialFields::Unnamed(unnamed) => unnamed.unpack(unpack_context),
-            SpecialFields::Unit => (TokenStream::default(), Vec::<TokenStream>::default())
+            SpecialFields::Unit => (TokenStream::default(), Vec::<TokenStream>::default()),
         }
     }
 }
@@ -130,7 +128,7 @@ impl Unpack for FieldsNamed {
                 SpecialType::Type(ty) => {
                     // todo: add fish syntax
                     let field = quote!(
-                        #(#attrs)* 
+                        #(#attrs)*
                         #vis #ident : #ty
                     );
                     fields.push(field);
@@ -142,7 +140,7 @@ impl Unpack for FieldsNamed {
 
                     // todo: add fish syntax
                     let field = quote!(
-                        #(#attrs)* 
+                        #(#attrs)*
                         #vis #ident : #ty
                     );
                     fields.push(field);
@@ -156,7 +154,7 @@ impl Unpack for FieldsNamed {
                 }
             }
         }
-        
+
         let body = quote!(
             { #(#fields),* }
         );
@@ -187,7 +185,7 @@ impl Unpack for FieldsUnnamed {
             match field.ty {
                 SpecialType::Type(ty) => {
                     let field = quote!(
-                        #(#attrs)* 
+                        #(#attrs)*
                         #vis #ty
                     );
                     fields.push(field);
@@ -200,17 +198,17 @@ impl Unpack for FieldsUnnamed {
                         #vis #ty
                     );
                     fields.push(field);
-                    
+
                     let definition = special.unpack(unpack_context.clone());
                     definitions.push(definition);
                 }
             }
         }
-        
+
         let body = quote!(
             ( #(#fields),* )
         );
-        
+
         (body, definitions)
     }
 }
