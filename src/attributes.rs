@@ -20,8 +20,8 @@ use syn::{bracketed, token, LitInt, Meta, Token};
 /// }
 /// ```
 pub enum FieldAttribute {
-    Type(NestedAttribute),
-    Item(Attribute),
+    Nested(NestedAttribute),
+    Field(Attribute),
 }
 
 #[derive(Clone, PartialEq, Eq)]
@@ -94,9 +94,9 @@ impl ParseAttribute for Attribute {
 impl ParseAttribute for FieldAttribute {
     fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
         if input.peek(Token![#]) && input.peek2(Token![>]) {
-            Ok(Self::Type(input.call(NestedAttribute::parse_single_outer)?))
+            Ok(Self::Nested(input.call(NestedAttribute::parse_single_outer)?))
         } else {
-            Ok(Self::Item(input.call(Attribute::parse_single_outer)?))
+            Ok(Self::Field(input.call(Attribute::parse_single_outer)?))
         }
     }
 }
@@ -185,8 +185,8 @@ impl ToTokens for NestedAttribute {
 impl ToTokens for FieldAttribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            FieldAttribute::Type(a) => a.to_tokens(tokens),
-            FieldAttribute::Item(a) => a.to_tokens(tokens),
+            FieldAttribute::Nested(a) => a.to_tokens(tokens),
+            FieldAttribute::Field(a) => a.to_tokens(tokens),
         }
     }
 }
@@ -207,6 +207,17 @@ impl From<CompositeAttribute> for Attribute {
             pound_token: composite.pound_token,
             bracket_token: composite.bracket_token,
             meta: composite.meta,
+        }
+    }
+}
+
+impl From<NestedAttribute> for CompositeAttribute {
+    fn from(nested: NestedAttribute) -> Self {
+        CompositeAttribute {
+            pound_token: nested.pound_token,
+            bracket_token: nested.bracket_token,
+            meta: nested.meta,
+            modifier: nested.modifier,
         }
     }
 }
