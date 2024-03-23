@@ -21,7 +21,7 @@ impl Unpack for Special {
         let visibility = self.vis;
         let ident = self.ident; // the definition name/type
         let generics = self.generics;
-
+        let where_clause = &generics.where_clause;
         // based on the type of the Special type [struct | enum | union?]
         // then determine the expansion
         match self.body {
@@ -37,7 +37,7 @@ impl Unpack for Special {
                         #(#definitions)*
 
                         #(#attrs)*
-                        #visibility struct #ident #generics #body
+                        #visibility struct #ident #generics #where_clause #body
                     )
                 }
                 SpecialFields::Unnamed(unnamed) => {
@@ -48,12 +48,13 @@ impl Unpack for Special {
                         #(#definitions)*
 
                         #(#attrs)*
-                        #visibility struct #ident #generics #body;
+                        #visibility struct #ident #generics #body #where_clause;
                     )
                 }
                 SpecialFields::Unit => {
                     // no unpacking required here, since there are no types
                     // in other words, this branch is always a leaf
+                    
                     quote!(
                         #(#attrs)*
                         #visibility struct #ident #generics;
@@ -63,7 +64,7 @@ impl Unpack for Special {
             Body::Enum(body_enum) => {
                 let mut accumulated_definitions = vec![];
                 let mut variants = vec![];
-
+                
                 for variant in body_enum.variants {
                     let (attrs, next) = UnpackContext::filter_field_nested(variant.attrs); // todo: handle this
                     let ident = variant.ident;
@@ -80,12 +81,12 @@ impl Unpack for Special {
                     );
                     variants.push(variant);
                 }
-
+                
                 quote!(
                     #(#accumulated_definitions)*
 
                     #(#attrs)*
-                    #visibility enum #ident #generics {
+                    #visibility enum #ident #generics #where_clause {
                         #( #variants ),*
                     }
                 )
@@ -123,7 +124,10 @@ impl Unpack for FieldsNamed {
             let _mutability = field.mutability;
             // this is a named type, so there should always be an ident
             // if there is no ident then there should be a parsing bug
-            let ident = field.ident.expect("ident missing. internal error?");
+            let ident = field.ident.unwrap_or_else(|| 
+                panic!("Internal Macro Error. This is a bug. \
+                Please Consider opening an issue with steps to reproduce the bug \
+                Provide this information: Error from line {}", {line!()}));
 
             // branch off the type depending on if leaf is reached
             match field.ty {
@@ -223,3 +227,4 @@ impl Unpack for FieldsUnnamed {
         (body, definitions)
     }
 }
+
