@@ -179,9 +179,6 @@ impl Unpack for FieldsNamed {
             
             let fish = field.fish;
             
-            // if fish.is_some() {
-            //     panic!("{}", quote!(#fish))
-            // }
 
             // branch off the type depending on if leaf is reached
             match field.ty {
@@ -247,6 +244,8 @@ impl Unpack for FieldsUnnamed {
 
             // this is an unnamed variant so there should never Some(T)
             let _ident = field.ident; // todo: warn if this is not none
+            
+            let fish = field.fish;
 
             // branch off based on if a type is defined or should be defined
             match field.ty {
@@ -262,7 +261,7 @@ impl Unpack for FieldsUnnamed {
 
                     let field = quote!(
                         #(#attrs)*
-                        #vis #ty
+                        #vis #ty #fish
                     );
                     fields.push(field);
 

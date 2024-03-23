@@ -59,10 +59,41 @@ fn attribute_test() {
             Two,
         }
     }
+    
+    // nest! {
+    //     struct Outside {
+    //         f : struct Inside<G> {
+    //             gf: G
+    //         },
+    //     }
+    // }
+    
+    let v = vec![1, 2, 3];
+    
+    let v2 = v.into_iter().collect::<Vec<i32>>();
+    
+    nest! {
+        struct A<T>(T) where T: Clone
+    }
 }
 
 #[test]
-fn test_semis() {}
+fn test_semis() {
+    // nest! {
+    //     struct Two(::<i32> struct One<T>(T))
+    // }
+    
+    nest! {
+        /// thing
+        struct Hellok;
+    }
+}
+
+struct One1<T> (T)
+;
+struct Two1(
+    One1<i32>)
+;
 
 #[derive(Default)]
 enum AnEnum {
@@ -70,4 +101,18 @@ enum AnEnum {
     #[default]
     Default,
     Two,
+}
+
+
+struct NeedsLife<'a> {
+    string: &'a str
+}
+#[test]
+fn test_fish_errors() {
+    nest! {
+        struct Base(
+            struct NoError<T> {
+                tf: T
+            } ||<i32>)
+    }
 }

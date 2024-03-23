@@ -9,6 +9,7 @@ use syn::punctuated::Punctuated;
 use syn::{
     braced, parenthesized, token, FieldMutability, Generics, Ident, Token, Visibility, WhereClause,
 };
+use syn::spanned::Spanned;
 
 // most of the comments are stolen from the `syn` crate doc because im lazzzzzzy
 
@@ -113,9 +114,9 @@ pub struct SpecialField {
     pub mutability: FieldMutability,
     /// Name of the field if any
     pub ident: Option<Ident>,
-    pub fish: Option<GenFish>,
     pub colon_token: Option<Token![:]>,
     pub ty: SpecialType,
+    pub fish: Option<GenFish>,
 }
 
 impl Parse for Special {
@@ -163,7 +164,7 @@ impl Parse for Special {
                 }),
             })
         } else if lookahead.peek(Token![union]) {
-            Err(input.error("unions remain unimplemented"))
+            Err(input.error("Unions remain unimplemented")) //todo: improve this message
         } else {
             Err(lookahead.error())
         }
@@ -274,7 +275,7 @@ impl Parse for FieldsUnnamed {
 }
 
 impl SpecialField {
-    pub fn parse_named(input: ParseStream) -> syn::Result<Self> {
+    pub fn parse_named(mut input: ParseStream) -> syn::Result<Self> {
         let attrs = input.call(FieldAttribute::parse_outer)?;
         let vis: Visibility = input.parse()?;
 
@@ -286,13 +287,6 @@ impl SpecialField {
         } else {
             input.parse()
         }?;
-
-        // let fish = input.parse::<GenFish>()?;
-        let fish = if input.peek(Token![::]) {
-            Some(input.parse::<GenFish>()?)
-        } else {
-            None
-        };
 
         let colon_token: Token![:] = input.parse()?;
 
@@ -309,6 +303,9 @@ impl SpecialField {
         } else {
             input.parse()?
         };
+        
+        // handle FishHook
+        let fish = handle_fish_hook(&mut input, &ty)?;
 
         Ok(SpecialField {
             attrs,
@@ -321,15 +318,39 @@ impl SpecialField {
         })
     }
 
-    pub fn parse_unnamed(input: ParseStream) -> syn::Result<Self> {
+    pub fn parse_unnamed(mut input: ParseStream) -> syn::Result<Self> {
+        let attrs = input.call(FieldAttribute::parse_outer)?;
+        let vis = input.parse()?;
+        let ty = input.parse()?;
+
+        // handle FishHook
+        let fish = handle_fish_hook(&mut input, &ty)?;
+        
         Ok(SpecialField {
-            attrs: input.call(FieldAttribute::parse_outer)?,
-            vis: input.parse()?,
+            attrs,
+            vis,
             mutability: FieldMutability::None,
             ident: None,
-            fish: None,
             colon_token: None,
-            ty: input.parse()?,
+            ty,
+            fish,
         })
+    }
+}
+
+fn handle_fish_hook(input: &mut ParseStream, ty: &SpecialType) -> syn::Result<Option<GenFish>> {
+    if input.peek(Token![||]) {
+        // only allow FishHook syntax after a nested type definition
+        let fishhook = input.parse::<GenFish>()?;
+        if matches!(ty, SpecialType::Type(_)) {
+            // we have run into a FishHook in an invalid location
+            return Err(syn::Error::new(
+                fishhook.span(),
+                "FishHook should only come after nested type")
+            )
+        }
+        Ok(Some(fishhook))
+    } else {
+        Ok(None)
     }
 }
