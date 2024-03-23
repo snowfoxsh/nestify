@@ -67,7 +67,7 @@ impl UnpackContext {
                             panic!("not in the stack, dont need to remove (-)");
                         }
 
-                        // dont remove it from the future
+                        // don't remove it from the future
 
                         // remove from freeze
                         freeze.retain(|attr| attr != &a);

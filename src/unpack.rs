@@ -163,7 +163,7 @@ impl Unpack for FieldsNamed {
 
         // iterate through the fields
         for field in self.named {
-            // filter the attributes, passing the #> to the next iteration
+            // filter the attributes, passing the #> to the next iteration, 
             // we need to filter the attributes so that we can determine which are normal
             // or which should be passed on
             let (attrs, next) = UnpackContext::filter_field_nested(field.attrs);
@@ -182,7 +182,7 @@ impl Unpack for FieldsNamed {
 
             // branch off the type depending on if leaf is reached
             match field.ty {
-                // leaf node aka a non-special type => dont recurse
+                // leaf node aka a non-special type => don't recurse
                 // `SpecialType::Type`
                 // doesn't need fish because it will always be None
                 SpecialType::Type(ty) => {
