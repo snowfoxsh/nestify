@@ -281,6 +281,3 @@ impl Unpack for FieldsUnnamed {
         (body, definitions)
     }
 }
-
-
-struct TypeLevelConfiguration<const T: usize>;

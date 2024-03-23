@@ -8,8 +8,6 @@ pub enum SpecialType {
     Type(Type),
 }
 
-// idea: macro methods
-
 impl Parse for SpecialType {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         if let Ok(ty) = input.parse::<Type>() {

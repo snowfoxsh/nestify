@@ -245,5 +245,3 @@ impl PartialEq<Attribute> for CompositeAttribute {
         self.meta == other.meta
     }
 }
-
-// note: it is preferred that >#[...] comes after #[...]

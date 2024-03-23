@@ -10,13 +10,10 @@ use syn::{
     braced, parenthesized, token, FieldMutability, Generics, Ident, Token, Visibility, WhereClause,
 };
 
-// most of the comments are stolen from the `syn` crate doc because im lazzzzzzy
+// some comments are based on the `syn` crate documentation 
 
-// --- NOTES --- //
-
-// --- NOTES --- //
-
-/// The base type definition. It allows recursive definition expansions therefore
+/// The base type definition.
+/// It allows recursive definition expansions, therefore,
 /// it is *Special*
 pub struct Special {
     pub attrs: Vec<CompositeAttribute>, // used to be RecAttribute

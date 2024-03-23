@@ -84,8 +84,9 @@ fn test_semis() {
     // }
     
     nest! {
-        /// thing
-        struct Hellok;
+        struct Outside (
+            enum E<T> {Se(T)} ||<i32>,
+        )
     }
 }
 
