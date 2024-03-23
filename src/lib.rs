@@ -11,6 +11,12 @@ pub(crate) mod special_data;
 #[cfg(test)]
 mod tests;
 pub(crate) mod ty;
+
+/// Provides functionality for unpacking special data structures.
+///
+/// This module defines traits and implementations for recursively unpacking
+/// data structures annotated with custom attributes, facilitating a form of
+/// metaprogramming within Rust macros.
 pub(crate) mod unpack;
 pub(crate) mod unpack_context;
 

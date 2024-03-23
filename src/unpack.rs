@@ -5,14 +5,48 @@ use proc_macro2::TokenStream;
 use quote::quote;
 use crate::attributes::CompositeAttribute;
 
+/// A trait for types that can be unpacked within the context of custom attribute processing.
+///
+/// Implementors of this trait can be "unpacked" to generate Rust code (as `TokenStream`)
+/// based on their structure and annotations, potentially including modifications
+/// influenced by a provided `UnpackContext`.
 pub(crate) trait Unpack {
     type Output;
-    // fn unpack(self, context: UnpackContext) -> Self::Output;
+
+    /// Unpacks the current structure into a Rust `TokenStream`, taking into account
+    /// modifications from the given `UnpackContext` and any additional attributes.
+    ///
+    /// # Parameters
+    /// - `self`: The instance of the implementor to unpack.
+    /// - `context`: The unpacking context carrying information about inherited attributes
+    ///   and possibly influencing how unpacking is performed.
+    /// - `next`: A collection of `CompositeAttribute` that may modify the behavior of
+    ///   unpacking or influence the generated output.
+    ///
+    /// # Returns
+    /// `Self::Output`: The generated Rust code as a `TokenStream`.
     fn unpack(self, context: UnpackContext, next: Vec<CompositeAttribute>) -> Self::Output;
 }
 
 impl Unpack for Special {
     type Output = TokenStream;
+
+    /// Performs unpacking for `Special` structures, handling struct and enum definitions
+    /// uniquely based on their form and attributes.
+    ///
+    /// This function combines current and inherited attributes, applies any context-specific
+    /// modifications, and generates a `TokenStream` representing the Rust code structure of
+    /// the unpacked `Special` instance.
+    ///
+    /// # Parameters
+    /// - `self`: The `Special` instance to be unpacked.
+    /// - `unpack_context`: The context that may influence how unpacking is performed, including
+    ///   attribute modifications.
+    /// - `Next`: Additional attributes that may come from higher-level structures or previous
+    ///   unpacking stages, to be considered in the current unpacking process.
+    ///
+    /// # Returns
+    /// A `TokenStream` representing the generated Rust code after unpacking.
     fn unpack(self, mut unpack_context: UnpackContext, next: Vec<CompositeAttribute>) -> Self::Output {
         // combine the attributes from the current and previous
         let attrs = [self.attrs, next].concat();
@@ -100,8 +134,20 @@ impl Unpack for SpecialFields {
     //             ^body        ^definitions
     fn unpack(self, unpack_context: UnpackContext, next: Vec<CompositeAttribute>) -> Self::Output {
         match self {
+            // Delegates to the `unpack` implementation of `FieldsNamed`, which handles the
+            // unpacking of named fields,
+            // including generating the necessary code and collecting
+            // any additional definitions.
             SpecialFields::Named(named) => named.unpack(unpack_context, next),
+
+            // Similarly, for unnamed fields (tuples), it delegates to `FieldsUnnamed`'s
+            // `unpack` method, which is specialized in handling tuple-like structures.
             SpecialFields::Unnamed(unnamed) => unnamed.unpack(unpack_context, next),
+
+            // For unit types, which have no fields, the function returns a default (empty)
+            // `TokenStream` along with an empty vector for definitions,
+            // as there's no additional
+            // code needed to represent a unit type in Rust.
             SpecialFields::Unit => (TokenStream::default(), Vec::<TokenStream>::default()),
         }
     }

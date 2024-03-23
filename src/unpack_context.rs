@@ -81,11 +81,11 @@ impl UnpackContext {
 
         [freeze, current].concat()
     }
-    
+
     pub(crate) fn filter_field_nested(field_attributes: Vec<FieldAttribute>) -> (Vec<Attribute>, Vec<CompositeAttribute>) {
         let mut field_applied_now = vec![];
         let mut composite = vec![];
-        
+
         field_attributes.into_iter().for_each(|attr| {
             match attr {
                 FieldAttribute::Field(fa) => field_applied_now.push(fa),
@@ -96,26 +96,3 @@ impl UnpackContext {
         (field_applied_now, composite)
     }
 }
-
-
-
-
-// impl SingleDepthContext {
-//     pub(crate) fn filter_attributes(&mut self, field_attributes: Vec<FieldAttribute>) -> Vec<Attribute> {
-//         let freeze = self.inherited_attributes.drain(0..);
-//         for attribute in field_attributes {
-//             match attribute {
-//                 FieldAttribute::Nested(na) => {
-//                     
-//                 }
-//                 FieldAttribute::Field(fa) => {
-//                     
-//                 }
-//             }
-//         }
-//         
-//         freeze
-//     }
-// }
-
-
