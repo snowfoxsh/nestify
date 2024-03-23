@@ -115,7 +115,7 @@ impl Unpack for Special {
                     );
                     variants.push(variant);
                 }
-                
+
                 quote!(
                     #(#accumulated_definitions)*
 
@@ -164,22 +164,31 @@ impl Unpack for FieldsNamed {
         // iterate through the fields
         for field in self.named {
             // filter the attributes, passing the #> to the next iteration
+            // we need to filter the attributes so that we can determine which are normal
+            // or which should be passed on
             let (attrs, next) = UnpackContext::filter_field_nested(field.attrs);
             let vis = field.vis;
             // unused field mutability see syn doc for FieldMutability
             let _mutability = field.mutability;
             // this is a named type, so there should always be an ident
             // if there is no ident then there should be a parsing bug
-            let ident = field.ident.unwrap_or_else(|| 
+            let ident = field.ident.unwrap_or_else(||
                 panic!("Internal Macro Error. This is a bug. \
                 Please Consider opening an issue with steps to reproduce the bug \
                 Provide this information: Error from line {}", {line!()}));
+            
+            let fish = field.fish;
+            
+            // if fish.is_some() {
+            //     panic!("{}", quote!(#fish))
+            // }
 
             // branch off the type depending on if leaf is reached
             match field.ty {
-                // leaf node aka non-special type => dont recurse
+                // leaf node aka a non-special type => dont recurse
+                // `SpecialType::Type`
+                // doesn't need fish because it will always be None
                 SpecialType::Type(ty) => {
-                    // todo: add fish syntax
                     let field = quote!(
                         #(#attrs)*
                         #vis #ident : #ty
@@ -194,14 +203,14 @@ impl Unpack for FieldsNamed {
                     // todo: add fish syntax
                     let field = quote!(
                         #(#attrs)*
-                        #vis #ident : #ty
+                        #vis #ident : #ty #fish
                     );
                     fields.push(field);
 
-                    
+
                     // combine attributes possibly inherited from an enum variant with field attrs
                     let next = [next, from_variant.clone()].concat();
-                    
+
                     // unpack the definition of the type
                     // then add it to the definition buffer
                     // this could be one or more definition
@@ -274,3 +283,5 @@ impl Unpack for FieldsUnnamed {
     }
 }
 
+
+struct TypeLevelConfiguration<const T: usize>;
