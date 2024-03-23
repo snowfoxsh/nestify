@@ -9,7 +9,6 @@ fn es() {}
 fn please_work() {
     let s = 32;
     nest!(
-        #[derive(Debug)]*
         struct Hello {
 
             pub o:
@@ -33,16 +32,17 @@ fn please_work() {
 #[test]
 fn enum_test() {
     nest! {
-        #[derive(Debug)]*
         enum Outside {
             Empty,
             Tuple(Option<i32>, i32, enum Nested1 { }),
+            #>[derive(Debug)]*
             Named {
                 a: (),
                 b: Option<i32>,
                 c: enum Nested2 {
                     Tuple2(enum Nested3 {})
-                }
+                },
+                d: struct Another {}
             }
         }
     }
