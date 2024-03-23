@@ -1,6 +1,6 @@
 use crate::attributes::{CompositeAttribute, FieldAttribute, ParseAttribute};
 use crate::discriminant::Discriminant;
-use crate::fish::GenFish;
+use crate::fish::FishHook;
 use crate::ty::SpecialType;
 use proc_macro_error::abort;
 use syn::ext::IdentExt;
@@ -116,7 +116,7 @@ pub struct SpecialField {
     pub ident: Option<Ident>,
     pub colon_token: Option<Token![:]>,
     pub ty: SpecialType,
-    pub fish: Option<GenFish>,
+    pub fish: Option<FishHook>,
 }
 
 impl Parse for Special {
@@ -303,7 +303,7 @@ impl SpecialField {
         } else {
             input.parse()?
         };
-        
+
         // handle FishHook
         let fish = handle_fish_hook(&mut input, &ty)?;
 
@@ -325,7 +325,7 @@ impl SpecialField {
 
         // handle FishHook
         let fish = handle_fish_hook(&mut input, &ty)?;
-        
+
         Ok(SpecialField {
             attrs,
             vis,
@@ -338,10 +338,10 @@ impl SpecialField {
     }
 }
 
-fn handle_fish_hook(input: &mut ParseStream, ty: &SpecialType) -> syn::Result<Option<GenFish>> {
+fn handle_fish_hook(input: &mut ParseStream, ty: &SpecialType) -> syn::Result<Option<FishHook>> {
     if input.peek(Token![||]) {
         // only allow FishHook syntax after a nested type definition
-        let fishhook = input.parse::<GenFish>()?;
+        let fishhook = input.parse::<FishHook>()?;
         if matches!(ty, SpecialType::Type(_)) {
             // we have run into a FishHook in an invalid location
             return Err(syn::Error::new(
