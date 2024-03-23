@@ -10,6 +10,9 @@
 - [x] rename fish to FishHook
 - [ ] fix spans
 - [ ] fix issue where `struct { };` "unexpected `;`" error is not spanned correctly
-- [ ] add diagnostic warnings and possibly errors behind a feature flag for nightly users
-    - [ ] add warning to put `#>[meta]` after `#[meta]`
+- [ ] better errors
+  - [ ] add diagnostic warnings and possibly errors behind a feature flag for nightly users
+  - [ ] add warning to put `#>[meta]` after `#[meta]`
+  - [ ] update errors to be more descriptive
+  - [ ] switch errors from proc-macro-error abort! to syn
 - [ ] write more tests
