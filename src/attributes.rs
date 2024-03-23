@@ -102,22 +102,14 @@ impl ParseAttribute for FieldAttribute {
 }
 
 impl ParseAttribute for NestedAttribute {
-    fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
+    fn parse_single_outer(mut input: ParseStream) -> syn::Result<Self> {
         let content;
         let pound_token = input.parse()?;
         let ident_token = input.parse()?;
         let bracket_token = bracketed!(content in input);
         let meta = content.parse()?;
 
-        let modifier = if input.peek(Token![*])
-            || input.peek(Token![/])
-            || input.peek(Token![-])
-            || input.peek(Token![+])
-        {
-            Some(input.parse()?)
-        } else {
-            None
-        };
+        let modifier = handle_attribute_modifier(&mut input)?;
 
         Ok(Self {
             pound_token,
@@ -130,28 +122,32 @@ impl ParseAttribute for NestedAttribute {
 }
 
 impl ParseAttribute for CompositeAttribute {
-    fn parse_single_outer(input: ParseStream) -> syn::Result<Self> {
+    fn parse_single_outer(mut input: ParseStream) -> syn::Result<Self> {
         let content;
         let pound_token = input.parse()?;
         let bracket_token = bracketed!(content in input);
         let meta = content.parse()?;
 
-        let modifier = if input.peek(Token![*])
-            || input.peek(Token![/])
-            || input.peek(Token![-])
-            || input.peek(Token![+])
-        {
-            Some(input.parse()?)
-        } else {
-            None
-        };
-
+        let modifier = handle_attribute_modifier(&mut input)?;
+        
         Ok(Self {
             pound_token,
             bracket_token,
             meta,
             modifier,
         })
+    }
+}
+
+fn handle_attribute_modifier(input: &mut ParseStream) -> syn::Result<Option<AttributeModifier>> {
+    if input.peek(Token![*])
+        || input.peek(Token![/])
+        || input.peek(Token![-])
+        || input.peek(Token![+])
+    {
+        Ok(Some(input.parse()?))
+    } else {
+        Ok(None)
     }
 }
 
