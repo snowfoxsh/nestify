@@ -9,7 +9,6 @@ use syn::punctuated::Punctuated;
 use syn::{
     braced, parenthesized, token, FieldMutability, Generics, Ident, Token, Visibility, WhereClause,
 };
-use syn::spanned::Spanned;
 
 // most of the comments are stolen from the `syn` crate doc because im lazzzzzzy
 

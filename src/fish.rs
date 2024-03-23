@@ -1,6 +1,5 @@
-use std::f32::consts::E;
 use proc_macro2::{Span, TokenStream};
-use quote::{quote_spanned, ToTokens};
+use quote::{ToTokens};
 use syn::parse::{Parse, ParseStream};
 use syn::{Generics, Token};
 use syn::spanned::Spanned;
