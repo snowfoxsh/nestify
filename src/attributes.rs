@@ -1,7 +1,7 @@
 use proc_macro2::TokenStream;
 use quote::ToTokens;
 use syn::parse::{Parse, ParseStream};
-use syn::{bracketed, token, LitInt, Meta, Token};
+use syn::{bracketed, token, Meta, Token};
 
 /// ```
 /// // In structs
