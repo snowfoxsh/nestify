@@ -68,10 +68,10 @@ impl Unpack for Special {
                     // - define ident and specify generics
                     // - insert our previous definitions behind the struct
                     quote!(
-                        #(#definitions)*
-
                         #(#attrs)*
                         #visibility struct #ident #generics #where_clause #body
+
+                        #(#definitions)*
                     )
                 }
                 SpecialFields::Unnamed(unnamed) => {
@@ -79,10 +79,10 @@ impl Unpack for Special {
                     let (body, definitions) = unnamed.unpack(unpack_context, Vec::default());
 
                     quote!(
-                        #(#definitions)*
-
                         #(#attrs)*
                         #visibility struct #ident #generics #body #where_clause;
+
+                        #(#definitions)*
                     )
                 }
                 SpecialFields::Unit => {
@@ -117,12 +117,12 @@ impl Unpack for Special {
                 }
 
                 quote!(
-                    #(#accumulated_definitions)*
-
                     #(#attrs)*
                     #visibility enum #ident #generics #where_clause {
                         #( #variants ),*
                     }
+
+                    #(#accumulated_definitions)*
                 )
             }
         }
