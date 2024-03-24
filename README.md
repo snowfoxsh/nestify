@@ -8,7 +8,6 @@ Designed to improve code readability and maintainability
 [<img alt="licence" src="https://img.shields.io/crates/l/nestify?style=for-the-badge&labelColor=555555&logo" height="20">](LICENCE)
 
 
-
 ## Abstract
 
 Nestify reimagines Rust struct and enum definitions with its "Type is Definition" approach,
@@ -16,16 +15,7 @@ streamlining the way you handle nested structures.
 Gone are the days of flipping back and forth between type definitions—Nestify
 Unifies your codebase, making your code cleaner and far more readable.
 
-Its syntax is designed to feel comfortable to rust developers.
-
-This is especially handy when you're wrestling with the labyrinthine depths of JSON REST API responses.
-With Nestify, those once-confounding schema definitions become as clear as day,
-letting you and your code breathe easier.
-
-**Give it a try!** Nestify has alot of features but don't be intimidated, it was designed to be as natural as possable,
-nestify was designed to be readable by someone who has never seen it after just a few minuites.
-Most of this guide is examples, since i beleive its easiest way to learn and i have poor writing writing skills haha.
-if you have better writing skills please contribute to this guide.
+Nestify is crafted for ease of learning, with its syntax tailored to be comfortable for Rust developers. The aim is for anyone, even those unfamiliar with the Nest macro, to quickly grasp its concept upon first glance.
 
 ## Features
 
@@ -45,7 +35,7 @@ Add this to your `Cargo.toml`:
 nestify = "0.3.1"
 ```
 
-Then, in your project, add the crate and use the macro:
+Then use the macro:
 
 ```rust
 use nestify::nest;
@@ -78,6 +68,7 @@ nest! {
     <summary>
     Expand
     </summary>
+    <br>
 
 ```rust
 struct UserProfile {
@@ -116,6 +107,7 @@ nest! {
     <summary>
     Expand
     </summary>
+    <br>
 
 ```rust
 struct Task {
@@ -128,57 +120,10 @@ enum Status {
     InProgress,
     Completed,
 }
-
 ```
 
 </details>
 
-
-## Basic
-
-```rust
-use nestify::nest;
-
-nest!{
-    struct Outer {
-        field1: struct Inner {
-            subfield1: i32,
-        },
-        field2: f64,
-    }
-}
-
-
-```
-
-This will produce:
-
-```rust
-struct Outer {
-    field1: Inner,
-    field2: f64,
-}
-
-struct Inner {
-    subfield1: i32,
-}
-```
-
-Enums can also be nested in structures like this!
-
-```rust
-nest! {
-    struct Outer (
-        enum Inner {
-            Variant1,
-            Variant2(i32),
-            Variant3 {
-                f: i32
-            }
-        }
-    )
-}
-```
 
 ## Supported definitions
 
@@ -221,15 +166,48 @@ nest! {
 // just as in normal rust
 ```
 
-### A note about types
-*However,* defining items in type genrics is not supported (*yet*).
-This: `struct One(Vec<struct Two>)` is invalid right now.
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
 
-### Generics
 
 ```rust
-use nestify::nest;
+// field structs (named)
+struct Named {
+    f: Nested,
+}
+struct Nested {}
 
+// tuple structs (unnamed)
+struct Unnamed(Nested,);
+struct Nested();
+
+// unit structs
+struct Unit {
+    unit: UnitStruct,
+}
+struct UnitStruct;
+
+
+// enums
+enum EnumVariants {
+    Unit,
+    Tuple(i32, TupleNested),
+    Struct { 
+        f1: i32 
+    },
+    DiscriminantVariant = 1,
+}
+struct TupleNested;
+```
+
+</details>
+
+## Generics
+
+```rust
 nest! {
     struct Example<'a, T> {
         s: &'a str,
@@ -237,17 +215,22 @@ nest! {
     }
 }
 ```
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
 
-This will produce:
 
 ```rust
-struct Struct<'a, T> { 
+struct Example<'a, T> { 
     s: &'a str, 
     t: T, 
 }
 ```
+</details>
 
-#### Nested Generics
+### Nested Generics
 
 When defining nested generics, you need to add generics to types. Enter "FishHook" syntax.
 To define generics on the field use `||<...>`. This will let you specify the nested generic types.
@@ -264,7 +247,7 @@ nest! {
 }
 ```
 
-this will expand like this to the field. It allows you to type
+This will expand like this to the field. It allows you to type
 
 ```rust
 // ~~snip~~
@@ -434,6 +417,7 @@ nest! {
     <summary>
     Expand
     </summary>
+    <br>
 
 ```rust
 struct MyUnit;
