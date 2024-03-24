@@ -1,6 +1,6 @@
 #![cfg(test)]
 
-use nestify2::nest;
+use nestify::nest;
 
 #[test]
 fn es() {}
