@@ -25,9 +25,11 @@ pub(crate) mod unpack;
 pub fn nest(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
     if input.is_empty() {
         abort_call_site!(
-            "unexpected end of input, expected one of: `struct`, `enum`, `union`";
-            help = "add a nested type to use the nest! macro"
-        ) // todo: flesh out help message
+            "Nest! macro expansion failed: The input is empty.";
+            note = "The nest! macro expects a non-empty `struct` or `enum` definition to function properly.";
+            help = "Please ensure that you are using the nest! macro with a valid `struct` or `enum`.\
+            Refer to documentation for information on how to use this macro and more examples";
+        );
     }
 
     let def = parse_macro_input!(input as Special);

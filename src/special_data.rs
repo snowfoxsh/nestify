@@ -224,7 +224,7 @@ fn parse_data_enum(
 impl Parse for SpecialVariant {
     fn parse(input: ParseStream) -> syn::Result<Self> {
         let attrs = input.call(FieldAttribute::parse_outer)?;
-        let _vis: Visibility = input.parse()?; // todo: check if can be removed because its stupid
+        let _vis: Visibility = input.parse()?; // left in for compatibility 
         let ident: Ident = input.parse()?;
         let fields = if input.peek(token::Brace) {
             SpecialFields::Named(input.parse()?)
