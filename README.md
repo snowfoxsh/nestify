@@ -458,8 +458,47 @@ struct DebugableStruct {}
 
 </details>
 
+#### Enum Variant Attribtues
+Field attributes can also be applied to an enum variant. If there are multiple items defined in a single variant then the attribute will be applied to each.
 
-## SemiColons
+```rust
+nest! {
+    enum MyEnum {
+        #>[derive(Debug)]
+        Variant {
+            // #[derive(Debug)
+            one: struct One,
+            // #[derive(Debug)
+            two: struct Two
+        }
+    }
+}
+```
+
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
+enum MyEnum {
+    Variant {
+        one: One,
+        two: Two,
+    }
+}
+
+#[derive(Debug)]
+struct One;
+
+#[derive(Debug)]
+struct Two;
+```
+
+</details>
+
+## Semicolons
 
 Rust mandates semicolons to mark the end of tuple struct and unit struct declarations. Nestify, however, introduces flexibility by making this semicolon optional.
 

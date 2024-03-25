@@ -83,7 +83,9 @@ mod generics {
     use super::*;
 
     #[test]
-    fn generic() {}
+    fn generic() {
+
+    }
 
     fn nested_generics() {
         nest! {
@@ -92,6 +94,29 @@ mod generics {
                     s: &'c str,
                     f: C
                 } ||<'a, i32>
+            }
+        }
+    }
+}
+
+mod attributes {
+    use super::*;
+}
+
+mod field_attributes {
+    use super::*;
+
+    #[test]
+    fn enum_variants() {
+        nest! {
+            enum MyEnum {
+                #>[derive(Debug)]
+                Variant {
+                    // #[derive(Debug)
+                    one: struct One,
+                    // #[derive(Debug)
+                    two: struct Two
+                }
             }
         }
     }
