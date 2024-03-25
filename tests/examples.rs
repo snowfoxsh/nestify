@@ -79,6 +79,24 @@ mod supported_definitions {
     }
 }
 
+mod generics {
+    use super::*;
+
+    #[test]
+    fn generic() {}
+
+    fn nested_generics() {
+        nest! {
+            struct Parent<'a> {
+                child : struct Child<'c, C> {
+                    s: &'c str,
+                    f: C
+                } ||<'a, i32>
+            }
+        }
+    }
+}
+
 enum EnumVariants {
     Unit,
     Tuple(i32, TupleNested),

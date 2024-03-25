@@ -41,6 +41,9 @@ Then use the macro:
 use nestify::nest;
 ```
 
+> #![NOTE] 
+> Use a nightly compiler toolchain for better diagnostics
+
 ## Quick Examples
 
 ### Simple Nested Structures
@@ -206,6 +209,7 @@ struct TupleNested;
 </details>
 
 ## Generics
+Nestify fully supports Rust's generic parameters. This compatibility ensures that you can incorporate both lifetime and type parameters within your nested struct definitions, just as you would in standard Rust code.
 
 ```rust
 nest! {
@@ -234,7 +238,7 @@ struct Example<'a, T> {
 
 When defining nested generics, you need to add generics to types. Enter "FishHook" syntax.
 To define generics on the field use `||<...>`. This will let you specify the nested generic types.
-It also works with lifetimes if needed
+It also works with lifetimes if needed. 
 
 ```rust
 nest! {
@@ -247,13 +251,24 @@ nest! {
 }
 ```
 
-This will expand like this to the field. It allows you to type
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
 
 ```rust
-// ~~snip~~
-child: Child<i32>,
-// ~~snip~~
+struct Parent<'a> {
+    child: Child<'a, i32>,
+    //           ^^^^^^^^ FishHook expands to this part
+}
+struct Child<'c, C> {
+    s: &'c str,
+    f: C,
+}
 ```
+
+</details>
 
 ## Attributes
 
@@ -268,17 +283,18 @@ let x = CloneMe {};
 let cl = x.clone();
 ```
 
-#### `#[meta]*`
 
-Using `*` syntax you can inherit attributes to child structures easily.
+### Recursive Attribtues **`#[meta]*`**
+
+Using `*` syntax you can inherit attributes to child structures easily. The attribute
+will propogate to each nested structure or enum. 
 
 ```rust
 nest! {
     #[apply_all]*
-    #[apply_this]
-    struct GrandParent {
-        parent: struct Parent {
-            child: struct Child {
+    struct One {
+        two: struct Two {
+            three: struct Three {
                 payload: ()
             }
         }
@@ -286,31 +302,38 @@ nest! {
 }
 ```
 
-This will produce:
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
 
 ```rust
 #[apply_all]
-#[apply_this]
-struct GrandParent {
-    parent: Parent,
+struct One {
+    two: Tow,
 }
 
 #[apply_all]
-struct Parent {
-    child: Child,
+struct Two {
+    three: Three,
 }
 
 #[apply_all]
-struct Child {
+struct Three {
     payload: (),
 }
 ```
 
-#### `#[meta]/`
+</details>
 
-You can end the recursion with a `/` attribute modifier.
+### Removal Syntax
+
+#### Disable Propogation **`#[meta]/`**
+
+You can end the recursion of an attribute with a `/` attribute modifier.
 It will remove a recursive attribute from the current structure and all nested structures
-for example
 
 ```rust
 nest! {
@@ -326,68 +349,115 @@ nest! {
 }
 ```
 
-will expand too
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
 
 ```rust
-struct Four {}
-struct Three {
-    four: Four,
-}
-#[nest]
-struct Two {
-    three: Three,
-}
 #[nest]
 struct One {
     two: Two,
 }
+
+#[nest]
+struct Two {
+    three: Three,
+}
+
+struct Three {
+    four: Four,
+}
+
+struct Four {}
 ```
 
-#### `#[meta]-`
+</details>
+
+#### Disable Single **`#[meta]-`**
 
 Using the `-` modifier will remove a recursive attribute from a single structure
-To use the previous example using `-` instead of `/` will expand to this
+To use the previous example using `-` instead of `/`:
 
-```rs
-#[nest]
-struct Four {}
-struct Three {
-    four: Four,
+```rust
+nest! {
+    #[nest]*
+    struct One {
+        two: struct Two {
+            three: #[nest]/ 
+            struct Three {
+                four: struct Four { }
+            }
+        }
+    }
 }
-#[nest]
-struct Two {
-    three: Three,
-}
+```
+
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+
+```rust
 #[nest]
 struct One {
     two: Two,
 }
+
+#[nest]
+struct Two {
+    three: Three,
+}
+
+struct Three {
+    four: Four,
+}
+
+#[nest]
+struct Four {}
 ```
 
-### Field Attributes `#>[meta]`
+</details>
 
-If you structure has many defined attributes it can become awkward to define attributes before the nested structure.
-To combat this you can define attributes that apply to nested objects before fields and enum variants.
-This can be accomplished by using `#>[meta]` notice the `>`.
+### Field Attributes **`#>[meta]`**
 
-For example:
+If you structure has many defined attributes it can become awkward to define attributes before the nested structure. To combat this you can define attributes that apply to nested objects before fields and enum variants. This can be accomplished by using `#>[meta]` syntax. `#>` will apply the attribute to the next struct.
 
-```rs
+```rust
 nest! {
     struct MyStruct {
         #>[derive(Debug)]
         f: struct DebugableStruct { } 
+        // equivlent to: 
+        // f: #[derive(Debug)]
+        // struct DebugableStruct { }
     }
 }
+```
 
-// becomes: 
-#[derive(Debug)]
-struct DebugableStruct {}
 
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
 struct MyStruct {
     f: DebugableStruct,
 }
+
+#[derive(Debug)]
+//       ^^^^^ applied to structure and not field `f`
+struct DebugableStruct {}
 ```
+
+</details>
+
 
 ## SemiColons
 
