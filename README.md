@@ -5,12 +5,12 @@ Designed to improve code readability and maintainability
 
 [<img alt="crates.io" src="https://img.shields.io/crates/v/nestify.svg?style=for-the-badge&color=fc8d62&logo=rust" height="20">](https://crates.io/crates/nestify)
 [<img alt="github" src="https://img.shields.io/badge/snowfoxsh/nestify-8da0cb?style=for-the-badge&labelColor=555555&logo=github" height="20">](https://github.com/snowfoxsh/nestify)
-[<img alt="licence" src="https://img.shields.io/crates/l/nestify?style=for-the-badge&labelColor=555555&logo" height="20">](LICENCE)
+[<img alt="License" src="https://img.shields.io/crates/l/nestify?style=for-the-badge&labelColor=555555&logo" height="20">](LICENSE)
 
 
 ## Abstract
 
-Nestify reimagines Rust struct and enum definitions with its "Type is Definition" approach,
+Nestify re-imagines Rust struct and enum definitions with its "Type is Definition" approach,
 streamlining the way you handle nested structures.
 Gone are the days of flipping back and forth between type definitions—Nestify
 Unifies your codebase, making your code cleaner and far more readable.
@@ -79,10 +79,12 @@ struct UserProfile {
     address: Address,
     preferences: Preferences,
 }
+
 struct Address {
     street: String,
     city: String,
 }
+
 struct Preferences {
     newsletter: bool,
 }
@@ -118,6 +120,7 @@ struct Task {
     description: String,
     status: Status,
 }
+
 enum Status {
     Pending,
     InProgress,
@@ -262,6 +265,7 @@ struct Parent<'a> {
     child: Child<'a, i32>,
     //           ^^^^^^^^ FishHook expands to this part
 }
+
 struct Child<'c, C> {
     s: &'c str,
     f: C,
@@ -279,15 +283,16 @@ nest! {
     #[derive(Clone)]
     struct CloneMe {}
 }
+
 let x = CloneMe {};
 let cl = x.clone();
 ```
 
 
-### Recursive Attribtues **`#[meta]*`**
+### Recursive Attributes **`#[meta]*`**
 
 Using `*` syntax you can inherit attributes to child structures easily. The attribute
-will propogate to each nested structure or enum. 
+will propagate to each nested structure or enum. 
 
 ```rust
 nest! {
@@ -330,7 +335,7 @@ struct Three {
 
 ### Removal Syntax
 
-#### Disable Propogation **`#[meta]/`**
+#### Disable Propagation **`#[meta]/`**
 
 You can end the recursion of an attribute with a `/` attribute modifier.
 It will remove a recursive attribute from the current structure and all nested structures
@@ -425,7 +430,7 @@ struct Four {}
 
 ### Field Attributes **`#>[meta]`**
 
-If you structure has many defined attributes it can become awkward to define attributes before the nested structure. To combat this you can define attributes that apply to nested objects before fields and enum variants. This can be accomplished by using `#>[meta]` syntax. `#>` will apply the attribute to the next struct.
+If you structure has many defined attributes, it can become awkward to define attributes before the nested structure. To combat this, you can define attributes that apply to nested objects before fields and enum variants. This can be accomplished by using `#>[meta]` syntax. `#>` will apply the attribute to the next struct.
 
 ```rust
 nest! {
@@ -458,7 +463,7 @@ struct DebugableStruct {}
 
 </details>
 
-#### Enum Variant Attribtues
+#### Enum Variant Attributes
 Field attributes can also be applied to an enum variant. If there are multiple items defined in a single variant then the attribute will be applied to each.
 
 ```rust
@@ -497,6 +502,7 @@ struct Two;
 ```
 
 </details>
+
 ## Semicolons
 
 Rust mandates semicolons to mark the end of tuple struct and unit struct declarations. Nestify, however, introduces flexibility by making this semicolon optional.
@@ -568,15 +574,15 @@ In this example, `struct DatabaseConfig` is defined directly within the `Option<
 
 
 Notice how `#[derive(Debug)]` is applied not to the field as an attribute
-but to the nested structure. Applied field attributes are compatable with attribute modifiers.
-Regular field attribtues are not compatable with attributes.
+but to the nested structure. Applied field attributes are compatible with attribute modifiers.
+Regular field attributes are not compatible with attributes.
 
 
 ---
 
 ## Contributing
 
-I love contributers. Im an bad writer so I would love comunity support to improve this guide!
+I love contributors. I'm a bad writer, so I would love community support to improve this guide!
 
 To make code changes:
 
@@ -590,8 +596,8 @@ Standard stuff!
 
 ## License
 
-This project is licensed under the MIT License. If you need it under a diffrent licence *Contact Me*.
-MIT licence support will always be maintained. Dont fear!
+This project is licensed under the MIT License. If you need it under a different license *Contact Me*.
+MIT license support will always be maintained. Don't fear!
 
 ## Contact me
 
