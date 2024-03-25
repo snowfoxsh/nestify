@@ -79,10 +79,12 @@ struct UserProfile {
     address: Address,
     preferences: Preferences,
 }
+
 struct Address {
     street: String,
     city: String,
 }
+
 struct Preferences {
     newsletter: bool,
 }
@@ -181,16 +183,19 @@ nest! {
 struct Named {
     f: Nested,
 }
+
 struct Nested {}
 
 // tuple structs (unnamed)
 struct Unnamed(Nested,);
+
 struct Nested();
 
 // unit structs
 struct Unit {
     unit: UnitStruct,
 }
+
 struct UnitStruct;
 
 
@@ -203,6 +208,7 @@ enum EnumVariants {
     },
     DiscriminantVariant = 1,
 }
+
 struct TupleNested;
 ```
 
@@ -284,10 +290,10 @@ let cl = x.clone();
 ```
 
 
-### Recursive Attribtues **`#[meta]*`**
+### Recursive Attributes **`#[meta]*`**
 
 Using `*` syntax you can inherit attributes to child structures easily. The attribute
-will propogate to each nested structure or enum. 
+will propagate to each nested structure or enum. 
 
 ```rust
 nest! {
@@ -330,7 +336,7 @@ struct Three {
 
 ### Removal Syntax
 
-#### Disable Propogation **`#[meta]/`**
+#### Disable Propagation **`#[meta]/`**
 
 You can end the recursion of an attribute with a `/` attribute modifier.
 It will remove a recursive attribute from the current structure and all nested structures
@@ -425,7 +431,7 @@ struct Four {}
 
 ### Field Attributes **`#>[meta]`**
 
-If you structure has many defined attributes it can become awkward to define attributes before the nested structure. To combat this you can define attributes that apply to nested objects before fields and enum variants. This can be accomplished by using `#>[meta]` syntax. `#>` will apply the attribute to the next struct.
+If you structure has many defined attributes, it can become awkward to define attributes before the nested structure. To combat this, you can define attributes that apply to nested objects before fields and enum variants. This can be achieved by using `#>[meta]` syntax. `#>` will apply the attribute to the next struct.
 
 ```rust
 nest! {
@@ -458,7 +464,7 @@ struct DebugableStruct {}
 
 </details>
 
-#### Enum Variant Attribtues
+#### Enum Variant Attributes
 Field attributes can also be applied to an enum variant. If there are multiple items defined in a single variant then the attribute will be applied to each.
 
 ```rust
@@ -569,15 +575,15 @@ In this example, `struct DatabaseConfig` is defined directly within the `Option<
 
 
 Notice how `#[derive(Debug)]` is applied not to the field as an attribute
-but to the nested structure. Applied field attributes are compatable with attribute modifiers.
-Regular field attribtues are not compatable with attributes.
+but to the nested structure. Applied field attributes are compatible with attribute modifiers.
+Regular field attributes are not compatible with attributes.
 
 
 ---
 
 ## Contributing
 
-I love contributers. Im an bad writer so I would love comunity support to improve this guide!
+I love contributors. Im an poor writer so I would love community support to improve this guide!
 
 To make code changes:
 
@@ -591,9 +597,9 @@ Standard stuff!
 
 ## License
 
-This project is licensed under the MIT License. If you need it under a diffrent licence *Contact Me*.
-MIT licence support will always be maintained. Dont fear!
+This project is licensed under the MIT License. If you need it under a different licence, *Contact Me*.
+MIT licence support will always be maintained. Don't fear!
 
 ## Contact me
 
-Check github for information @snowfoxsh
+Check GitHub for information @snowfoxsh
