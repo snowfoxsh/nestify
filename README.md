@@ -572,12 +572,6 @@ struct AppConfig(Option<struct DatabaseConfig { url: String }>);
 
 In this example, `struct DatabaseConfig` is defined directly within the `Option<T>` generic type in the declaration of `AppConfig`. This specific way of defining `DatabaseConfig` inline as part of the `AppConfig` declaration is not supported by Nestify at the moment.
 
-
-Notice how `#[derive(Debug)]` is applied not to the field as an attribute
-but to the nested structure. Applied field attributes are compatible with attribute modifiers.
-Regular field attributes are not compatible with attributes.
-
-
 ---
 
 ## Contributing
