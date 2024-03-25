@@ -41,8 +41,8 @@ Then use the macro:
 use nestify::nest;
 ```
 
-> #![NOTE] 
-> Use a nightly compiler toolchain for better diagnostics
+> [!NOTE]
+> A nightly toolchain might provide better error diagnostics
 
 ## Quick Examples
 
