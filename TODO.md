@@ -3,8 +3,8 @@
 - [x] add nested attribute `#>[meta]` support
 - [x] fix where clause
 - [ ] improve documentation
-- [ ] write README.md
-- [ ] add recursive generic support
+- [x] write README.md
+- [x] add recursive generic support
 - [ ] fix bug where `_ : <ty> struct Name {}` is valid when it should not be
 - [x] rework fish support
 - [x] rename fish to FishHook
