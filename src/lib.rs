@@ -20,6 +20,44 @@ pub(crate) mod unpack_context;
 /// metaprogramming within Rust macros.
 pub(crate) mod unpack;
 
+
+/// Allows for the expansion of "nested" items
+///
+/// # Learn
+/// See [Guide](https://github.com/snowfoxsh/nestify)
+///
+/// # Examples
+///
+/// Define a user profile with nested address and preferences structures
+/// ```
+/// nestify::nest! {
+///     struct UserProfile {
+///         name: String,
+///         address: struct Address {
+///             street: String,
+///             city: String,
+///         },
+///         preferences: struct Preferences {
+///             newsletter: bool,
+///         },
+///     }
+/// }
+/// ```
+///
+/// Define a task with a nested status enum
+/// ```
+/// nestify::nest! {
+///     struct Task {
+///         id: i32,
+///         description: String,
+///         status: enum Status {
+///             Pending,
+///             InProgress,
+///             Completed,
+///         },
+///     }
+/// }
+/// ```
 #[proc_macro]
 #[proc_macro_error]
 pub fn nest(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
