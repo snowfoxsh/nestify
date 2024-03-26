@@ -1,5 +1,8 @@
 # TODO
 
+- [ ] HIGH: fix publicity modifiers [ISSUE](https://github.com/snowfoxsh/nestify/issues/1)
+  - [ ] Enums
+  - [ ] Confirm structures
 - [x] add nested attribute `#>[meta]` support
 - [x] fix where clause
 - [ ] improve documentation
