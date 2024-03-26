@@ -245,11 +245,11 @@ It also works with lifetimes if needed.
 
 ```rust
 nest! {
-    struct Parent {
-        child : struct Child<C> {
+    struct Parent<'a> {
+        child : struct Child<'c, C> {
             s: &'c str,
             f: C
-        } ||<i32>
+        } ||<'a, i32>
     }
 }
 ```

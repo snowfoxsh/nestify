@@ -10,7 +10,6 @@ fn please_work() {
     let s = 32;
     nest!(
         struct Hello {
-
             pub o:
             struct Another {
                 s: struct A {

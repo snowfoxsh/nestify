@@ -84,7 +84,12 @@ mod generics {
 
     #[test]
     fn generic() {
-
+        nest! {
+            struct Example<'a, T> {
+                s: &'a str,
+                t: T
+            }
+        }
     }
 
     fn nested_generics() {
