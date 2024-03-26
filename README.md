@@ -391,7 +391,7 @@ nest! {
     #[nest]*
     struct One {
         two: struct Two {
-            three: #[nest]/ 
+            three: #[nest]- 
             struct Three {
                 four: struct Four { }
             }
