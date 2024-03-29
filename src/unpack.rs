@@ -3,6 +3,7 @@ use crate::ty::SpecialType;
 use crate::unpack_context::UnpackContext;
 use proc_macro2::TokenStream;
 use quote::quote;
+use syn::Visibility;
 use crate::attributes::CompositeAttribute;
 
 /// A trait for types that can be unpacked within the context of custom attribute processing.
@@ -22,10 +23,13 @@ pub(crate) trait Unpack {
     ///   and possibly influencing how unpacking is performed.
     /// - `next`: A collection of `CompositeAttribute` that may modify the behavior of
     ///   unpacking or influence the generated output.
+    /// - `override_public`: A modifier that is used to force the next
+    ///    definition to be specific publicity.
+    /// - `enum_context`: A boolean stating if an unnamed field is in an enum variant or not
     ///
     /// # Returns
     /// `Self::Output`: The generated Rust code as a `TokenStream`.
-    fn unpack(self, context: UnpackContext, next: Vec<CompositeAttribute>) -> Self::Output;
+    fn unpack(self, context: UnpackContext, next: Vec<CompositeAttribute>, override_public: Option<Visibility>, enum_context: bool) -> Self::Output;
 }
 
 impl Unpack for Special {
@@ -47,12 +51,12 @@ impl Unpack for Special {
     ///
     /// # Returns
     /// A `TokenStream` representing the generated Rust code after unpacking.
-    fn unpack(self, mut unpack_context: UnpackContext, next: Vec<CompositeAttribute>) -> Self::Output {
+    fn unpack(self, mut unpack_context: UnpackContext, next: Vec<CompositeAttribute>, override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
         // combine the attributes from the current and previous
         let attrs = [self.attrs, next].concat();
         let attrs = unpack_context.modify_composite(attrs);
 
-        let visibility = self.vis;
+        let visibility = override_public.unwrap_or_else(|| self.vis);
         let ident = self.ident; // the definition name/type
         let generics = self.generics;
         let where_clause = &generics.where_clause;
@@ -61,7 +65,7 @@ impl Unpack for Special {
         match self.body {
             Body::Struct(body_struct) => match body_struct.fields {
                 SpecialFields::Named(named) => {
-                    let (body, definitions) = named.unpack(unpack_context, Vec::default());
+                    let (body, definitions) = named.unpack(unpack_context, Vec::default(), None, false);
 
                     // define our current ctx struct
                     // - define attributes
@@ -76,7 +80,7 @@ impl Unpack for Special {
                 }
                 SpecialFields::Unnamed(unnamed) => {
                     // unpack our unnamed structure body, also collecting the recursive definitions
-                    let (body, definitions) = unnamed.unpack(unpack_context, Vec::default());
+                    let (body, definitions) = unnamed.unpack(unpack_context, Vec::default(), None, false);
 
                     quote!(
                         #(#attrs)*
@@ -103,7 +107,7 @@ impl Unpack for Special {
                     let (attrs, next) = UnpackContext::filter_field_nested(variant.attrs); // todo: handle this
                     let ident = variant.ident;
                     let (field_body, mut definitions) =
-                        variant.fields.unpack(unpack_context.clone(), next);
+                        variant.fields.unpack(unpack_context.clone(), next, None, true);
                     accumulated_definitions.append(&mut definitions);
                     // todo: get variant working
                     let discriminant = variant.discriminant;
@@ -132,17 +136,17 @@ impl Unpack for Special {
 impl Unpack for SpecialFields {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self, unpack_context: UnpackContext, next: Vec<CompositeAttribute>) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext, next: Vec<CompositeAttribute>, override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
         match self {
             // Delegates to the `unpack` implementation of `FieldsNamed`, which handles the
             // unpacking of named fields,
             // including generating the necessary code and collecting
             // any additional definitions.
-            SpecialFields::Named(named) => named.unpack(unpack_context, next),
+            SpecialFields::Named(named) => named.unpack(unpack_context, next, None, enum_context),
 
             // Similarly, for unnamed fields (tuples), it delegates to `FieldsUnnamed`'s
             // `unpack` method, which is specialized in handling tuple-like structures.
-            SpecialFields::Unnamed(unnamed) => unnamed.unpack(unpack_context, next),
+            SpecialFields::Unnamed(unnamed) => unnamed.unpack(unpack_context, next, None, enum_context),
 
             // For unit types, which have no fields, the function returns a default (empty)
             // `TokenStream` along with an empty vector for definitions,
@@ -156,7 +160,7 @@ impl Unpack for SpecialFields {
 impl Unpack for FieldsNamed {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self, unpack_context: UnpackContext, from_variant: Vec<CompositeAttribute>) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext, from_variant: Vec<CompositeAttribute>,  override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
         // fields buffer load each
         let mut fields = vec![];
         let mut definitions = vec![];
@@ -212,7 +216,7 @@ impl Unpack for FieldsNamed {
                     // then add it to the definition buffer
                     // this could be one or more definition
                     // we don't care
-                    let definition = special.unpack(unpack_context.clone(), next);
+                    let definition = special.unpack(unpack_context.clone(), next, None, enum_context);
                     definitions.push(definition);
                 }
             }
@@ -229,7 +233,7 @@ impl Unpack for FieldsNamed {
 impl Unpack for FieldsUnnamed {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self, unpack_context: UnpackContext, from_variant: Vec<CompositeAttribute>) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext, from_variant: Vec<CompositeAttribute>, override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
         let mut fields = vec![];
         let mut definitions = vec![];
 
@@ -237,7 +241,15 @@ impl Unpack for FieldsUnnamed {
         for field in self.unnamed {
             // filter the attributes, passing the #> to the next iteration
             let (attrs, next) = UnpackContext::filter_field_nested(field.attrs);
-            let vis = field.vis;
+
+            // let vis = field.vis;
+            // if we are in an enum variant then don't show the visibility to the field
+            let move_vis = field.vis;
+            let vis = if enum_context {
+                None
+            } else {
+                Some(&move_vis)
+            };
 
             // unused field mutability see syn doc for FieldMutability
             let _mutability = field.mutability;
@@ -246,6 +258,7 @@ impl Unpack for FieldsUnnamed {
             let _ident = field.ident; // todo: warn if this is not none
             
             let fish = field.fish;
+
 
             // branch off based on if a type is defined or should be defined
             match field.ty {
@@ -268,7 +281,12 @@ impl Unpack for FieldsUnnamed {
                     // combine attributes possibly inherited from an enum variant with field attrs
                     let next = [next, from_variant.clone()].concat();
 
-                    let definition = special.unpack(unpack_context.clone(), next);
+                    // if it is an unnamed field, then the definition visibility must be overridden
+                    let override_publicity = Some(move_vis);
+
+                    // if field is unnamed the field publicity should be applied to the definition
+
+                    let definition = special.unpack(unpack_context.clone(), next, override_publicity, enum_context);
                     definitions.push(definition);
                 }
             }
