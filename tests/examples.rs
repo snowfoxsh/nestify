@@ -127,6 +127,38 @@ mod field_attributes {
     }
 }
 
+mod visibility {
+    use super::*;
+
+    #[test]
+    fn named_fields() {
+        nest! {
+            pub struct One {
+                pub two: pub struct Two
+                //|      ^^^ visibility applied to definition (2)
+                //|> visibility applied to field (1)
+            }
+        }
+    }
+
+    #[test]
+    fn unnamed_fields() {
+        nest! {
+            pub struct One(pub struct Two)
+            //             ^^^ visibility applied to both field and struct
+        }
+    }
+
+    #[test]
+    fn enum_variants() {
+        nest! {
+            pub enum One {
+                Two(pub struct Two)
+            }
+        }
+    }
+}
+
 enum EnumVariants {
     Unit,
     Tuple(i32, TupleNested),
