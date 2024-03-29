@@ -281,7 +281,7 @@ impl Unpack for FieldsUnnamed {
                     // combine attributes possibly inherited from an enum variant with field attrs
                     let next = [next, from_variant.clone()].concat();
 
-                    // if it is an unnamed field, then the definition visability must be overrided
+                    // if it is an unnamed field, then the definition visibility must be overridden
                     let override_publicity = Some(move_vis);
 
                     // if field is unnamed the field publicity should be applied to the definition
