@@ -116,3 +116,76 @@ fn test_fish_errors() {
             } ||<i32>)
     }
 }
+
+
+
+#[test]
+fn augmented_types() {
+    {
+        nest! {
+            struct Foo {
+                field: Option<struct Bar {
+                    foo: u32
+                }>,
+            }
+        };
+
+        let foo = Foo { field: Some(Bar { foo: 42 })};
+    }
+
+    {
+        nest! {
+            struct Foo(
+                Option<pub struct Bar {
+                    foo: u32
+                }>,
+            )
+        };
+
+        let foo = Foo (Some(Bar { foo: 42 }));
+    }
+
+    {
+        nest! {
+            enum Foo {
+                Variant {
+                    field: Option<#[derive(Debug)] struct Bar {
+                        foo: u32
+                    }>,
+                }
+                
+            }
+        };
+
+        let foo = Foo::Variant { field: Some(Bar { foo: 42 })};
+    }
+
+    {
+        nest! {
+            #[derive(Debug)]*
+            enum Foo {
+                Variant(
+                    Option<struct Bar {
+                        foo: u32
+                    }>,
+                )
+            }
+        };
+
+        let foo = Foo::Variant (Some(Bar { foo: 42 }));
+        println!("{foo:?}");
+    }
+
+    {
+        nest! {
+            struct Foo {
+                field: Option<struct Bar<T>(T) ||<u32>>,
+            }
+        };
+
+        let foo = Foo { field: Some(Bar(42)) };
+        // check it is actually a generic struct
+        let bar: Bar<String> = Bar("test".to_string());
+    }
+    
+}

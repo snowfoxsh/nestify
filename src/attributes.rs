@@ -3,7 +3,7 @@ use quote::ToTokens;
 use syn::parse::{Parse, ParseStream};
 use syn::{bracketed, token, Meta, Token};
 
-/// ```
+/// ```ignore
 /// // In structs
 /// struct MyStruct {
 ///     #[field_attribute]

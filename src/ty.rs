@@ -188,13 +188,37 @@ pub(crate) mod augmented {
         }
 
         fn parse_helper(input: ParseStream, expr_style: bool) -> Result<Self> {
-            todo!()
+            let mut path = Path {
+                leading_colon: input.parse()?,
+                segments: {
+                    let mut segments = syn::punctuated::Punctuated::new();
+                    let value = PathSegment::parse_helper(input, expr_style)?;
+                    segments.push_value(value);
+                    segments
+                },
+            };
+            Path::parse_rest(input, &mut path, expr_style)?;
+            Ok(path)
+        }
+
+        fn parse_rest(
+            input: ParseStream,
+            path: &mut Self,
+            expr_style: bool,
+        ) -> Result<()> {
+            while input.peek(Token![::]) && !input.peek3(syn::token::Paren) {
+                let punct: Token![::] = input.parse()?;
+                path.segments.push_punct(punct);
+                let value = PathSegment::parse_helper(input, expr_style)?;
+                path.segments.push_value(value);
+            }
+            Ok(())
         }
     }
 
     impl Parse for Path {
         fn parse(input: ParseStream) -> Result<Self> {
-            todo!()
+            Self::parse_helper(input, false)
         }
     }
 
@@ -520,24 +544,34 @@ pub(crate) mod augmented {
                 GenericArgument::AssocType(v) => (syn::GenericArgument::AssocType(v), vec![]),
                 GenericArgument::AssocConst(v) => (syn::GenericArgument::AssocConst(v), vec![]),
                 GenericArgument::Constraint(v) => (syn::GenericArgument::Constraint(v), vec![]),
-                GenericArgument::Type(super::SpecialType::Type(ty), fish ) => {
+                GenericArgument::Type(super::SpecialType::Type(ty), _fish ) => {
                     (syn::GenericArgument::Type(ty), vec![])
                 }
-                GenericArgument::Type(super::SpecialType::Augmented(ty), fish) => {
-                    todo!()
+                GenericArgument::Type(super::SpecialType::Augmented(ty), _fish) => {
+                    let (ty, defs) = ty.unpack(unpack_context, from_variant);
+                    (syn::GenericArgument::Type(ty), defs)
                 }
                 GenericArgument::Type(super::SpecialType::Def(special), fish) => {
-                    todo!()
+                    let ty = type_from_ident_and_fish(special.ident.clone(), fish);
+
+                    let defs = special.unpack(unpack_context.clone(), from_variant);
+                    (syn::GenericArgument::Type(ty), vec![defs])
 
                 }
             }
         }
     }
 
-    fn type_from_ident_and_fish(ident: syn::Ident, fish: FishHook) -> syn::Type {
-        let syn::AngleBracketedGenericArguments { lt_token, args, gt_token, ..} = fish.generics;
-        let args = syn::AngleBracketedGenericArguments { lt_token, args, gt_token, colon2_token: None };
-        let args = syn::PathArguments::AngleBracketed(args);
+    fn type_from_ident_and_fish(ident: syn::Ident, fish: Option<FishHook>) -> syn::Type {
+        let args = match fish {
+            None => syn::PathArguments::None,
+            Some(fish) => {
+                let syn::AngleBracketedGenericArguments { lt_token, args, gt_token, ..} = fish.generics;
+                let args = syn::AngleBracketedGenericArguments { lt_token, args, gt_token, colon2_token: None };
+                syn::PathArguments::AngleBracketed(args)
+            }
+        };
+       
         let segment = syn::PathSegment { ident, arguments: args };
         let mut segments = syn::punctuated::Punctuated::new();
         segments.push(segment);

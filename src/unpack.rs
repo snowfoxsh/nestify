@@ -203,8 +203,18 @@ impl Unpack for FieldsNamed {
                     );
                     fields.push(field);
                 }
-                SpecialType::Augmented(_augmented) => {
-                    todo!()
+                SpecialType::Augmented(augmented) => {
+                    // combine attributes possibly inherited from an enum variant with field attrs
+                    let next = [next, from_variant.clone()].concat();
+
+                    let (ty, mut aug_definitions) = augmented.unpack(unpack_context.clone(), next);
+                    definitions.append(&mut aug_definitions);
+
+                    let field = quote!(
+                        #(#attrs)*
+                        #vis #ident : #ty
+                    );
+                    fields.push(field);
                 }
                 // recuse down the parse stack
                 SpecialType::Def(special) => {
@@ -273,8 +283,18 @@ impl Unpack for FieldsUnnamed {
                     );
                     fields.push(field);
                 }
-                SpecialType::Augmented(_augmented) => {
-                    todo!()
+                SpecialType::Augmented(augmented) => {
+                    // combine attributes possibly inherited from an enum variant with field attrs
+                    let next = [next, from_variant.clone()].concat();
+
+                    let (ty, mut aug_definitions) = augmented.unpack(unpack_context.clone(), next);
+                    definitions.append(&mut aug_definitions);
+
+                    let field = quote!(
+                        #(#attrs)*
+                        #vis #ty
+                    );
+                    fields.push(field);
                 }
                 SpecialType::Def(special) => {
                     let ty = &special.ident;
