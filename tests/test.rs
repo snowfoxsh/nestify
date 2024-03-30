@@ -1,5 +1,7 @@
 #![cfg(test)]
 
+#![allow(dead_code, unused_variables)]
+
 use nestify::nest;
 
 #[test]

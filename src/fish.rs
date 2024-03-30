@@ -1,9 +1,8 @@
 use proc_macro2::{Span, TokenStream};
-use quote::{ToTokens, TokenStreamExt};
+use quote::{ToTokens};
 use syn::parse::{Parse, ParseStream};
-use syn::{Generics, Token, GenericArgument, token::Comma, AngleBracketedGenericArguments};
+use syn::{Token, AngleBracketedGenericArguments};
 use syn::spanned::Spanned;
-use syn::punctuated::Punctuated;
 
 #[derive(Clone, Debug)]
 pub struct FishHook {

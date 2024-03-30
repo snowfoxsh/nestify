@@ -65,7 +65,7 @@ pub(crate) mod augmented {
         None,
         AngleBracketed(AngleBracketedGenericArguments),
         // todo: support custom types inside `Fn(A, B) -> C` ?
-        Parenthesized(syn::ParenthesizedGenericArguments),
+        // Parenthesized(syn::ParenthesizedGenericArguments),
     }
 
     pub struct AngleBracketedGenericArguments {
@@ -227,7 +227,7 @@ pub(crate) mod augmented {
         pub fn is_none(&self) -> bool {
             match self {
                 PathArguments::None => true,
-                PathArguments::AngleBracketed(_) | PathArguments::Parenthesized(_) => false,
+                PathArguments::AngleBracketed(_) => false,
             }
         }
     }
@@ -336,7 +336,7 @@ pub(crate) mod augmented {
             }
 
             let mut argument: super::SpecialType = input.parse()?;
-            let mut fish = handle_fish_hook(&mut input, &argument)?;
+            let fish = handle_fish_hook(&mut input, &argument)?;
 
             match argument {
                 super::SpecialType::Type(syn::Type::Path(mut ty))
@@ -501,7 +501,6 @@ pub(crate) mod augmented {
         ) -> Self::Output {
             match self {
                 PathArguments::None => (syn::PathArguments::None, vec![]),
-                PathArguments::Parenthesized(p) => (syn::PathArguments::Parenthesized(p), vec![]),
                 PathArguments::AngleBracketed(a) => {
                     let (a, defs) = a.unpack(unpack_context, from_variant);
                     (syn::PathArguments::AngleBracketed(a), defs)
