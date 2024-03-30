@@ -431,10 +431,12 @@ pub(crate) mod augmented {
             self,
             unpack_context: UnpackContext,
             from_variant: Vec<CompositeAttribute>,
+            override_public: Option<syn::Visibility>,
+            enum_context: bool,
         ) -> Self::Output {
             match self {
                 Self::Path(ty) => {
-                    let (ty, definitions) = ty.unpack(unpack_context, from_variant);
+                    let (ty, definitions) = ty.unpack(unpack_context, from_variant, override_public, enum_context);
                     (syn::Type::Path(ty), definitions)
                 }
             }
@@ -448,9 +450,11 @@ pub(crate) mod augmented {
             self,
             unpack_context: UnpackContext,
             from_variant: Vec<CompositeAttribute>,
+            override_public: Option<syn::Visibility>,
+            enum_context: bool,
         ) -> Self::Output {
             let Self { qself, path } = self;
-            let (path, definitions) = path.unpack(unpack_context, from_variant);
+            let (path, definitions) = path.unpack(unpack_context, from_variant, override_public, enum_context);
             (syn::TypePath { qself, path }, definitions )
         }
     }
@@ -462,12 +466,14 @@ pub(crate) mod augmented {
             self,
             unpack_context: UnpackContext,
             from_variant: Vec<CompositeAttribute>,
+            override_public: Option<syn::Visibility>,
+            enum_context: bool,
         ) -> Self::Output {
             let Self { leading_colon, segments } = self;
             let mut definitions = vec![];
             let segments = segments.into_pairs().map(|seg| {
                 let (seg, punct) = seg.into_tuple();
-                let (seg, mut defs) = seg.unpack(unpack_context.clone(), from_variant.clone());
+                let (seg, mut defs) = seg.unpack(unpack_context.clone(), from_variant.clone(), override_public.clone(), enum_context);
                 definitions.append(&mut defs);
                 syn::punctuated::Pair::new(seg, punct)
             }).collect();
@@ -484,9 +490,11 @@ pub(crate) mod augmented {
             self,
             unpack_context: UnpackContext,
             from_variant: Vec<CompositeAttribute>,
+            override_public: Option<syn::Visibility>,
+            enum_context: bool,
         ) -> Self::Output {
             let Self { ident, arguments } = self;
-            let (arguments, definitions) = arguments.unpack(unpack_context, from_variant);
+            let (arguments, definitions) = arguments.unpack(unpack_context, from_variant, override_public, enum_context);
             (syn::PathSegment { ident, arguments }, definitions )
         }
     }
@@ -498,11 +506,13 @@ pub(crate) mod augmented {
             self,
             unpack_context: UnpackContext,
             from_variant: Vec<CompositeAttribute>,
+            override_public: Option<syn::Visibility>,
+            enum_context: bool,
         ) -> Self::Output {
             match self {
                 PathArguments::None => (syn::PathArguments::None, vec![]),
                 PathArguments::AngleBracketed(a) => {
-                    let (a, defs) = a.unpack(unpack_context, from_variant);
+                    let (a, defs) = a.unpack(unpack_context, from_variant, override_public, enum_context);
                     (syn::PathArguments::AngleBracketed(a), defs)
                 }
             }
@@ -516,12 +526,14 @@ pub(crate) mod augmented {
             self,
             unpack_context: UnpackContext,
             from_variant: Vec<CompositeAttribute>,
+            override_public: Option<syn::Visibility>,
+            enum_context: bool,
         ) -> Self::Output {
             let Self { colon2_token, lt_token, args, gt_token } = self;
             let mut definitions = vec![];
             let args = args.into_pairs().map(|arg| {
                 let (arg, punct) = arg.into_tuple();
-                let (arg, mut defs) = arg.unpack(unpack_context.clone(), from_variant.clone());
+                let (arg, mut defs) = arg.unpack(unpack_context.clone(), from_variant.clone(), override_public.clone(), enum_context);
                 definitions.append(&mut defs);
                 syn::punctuated::Pair::new(arg, punct)
             }).collect();
@@ -536,6 +548,8 @@ pub(crate) mod augmented {
             self,
             unpack_context: UnpackContext,
             from_variant: Vec<CompositeAttribute>,
+            override_public: Option<syn::Visibility>,
+            enum_context: bool,
         ) -> Self::Output {
             match self {
                 GenericArgument::Lifetime(v) => (syn::GenericArgument::Lifetime(v), vec![]),
@@ -547,13 +561,13 @@ pub(crate) mod augmented {
                     (syn::GenericArgument::Type(ty), vec![])
                 }
                 GenericArgument::Type(super::SpecialType::Augmented(ty), _fish) => {
-                    let (ty, defs) = ty.unpack(unpack_context, from_variant);
+                    let (ty, defs) = ty.unpack(unpack_context, from_variant, override_public, enum_context);
                     (syn::GenericArgument::Type(ty), defs)
                 }
                 GenericArgument::Type(super::SpecialType::Def(special), fish) => {
                     let ty = type_from_ident_and_fish(special.ident.clone(), fish);
 
-                    let defs = special.unpack(unpack_context.clone(), from_variant);
+                    let defs = special.unpack(unpack_context.clone(), from_variant, override_public, enum_context);
                     (syn::GenericArgument::Type(ty), vec![defs])
 
                 }

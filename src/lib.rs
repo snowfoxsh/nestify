@@ -72,5 +72,5 @@ pub fn nest(input: proc_macro::TokenStream) -> proc_macro::TokenStream {
 
     let def = parse_macro_input!(input as Special);
 
-    def.unpack(UnpackContext::default(), Vec::default()).into()
+    def.unpack(UnpackContext::default(), Vec::default(), None, false).into()
 }

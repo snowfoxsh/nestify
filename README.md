@@ -32,7 +32,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nestify = "0.3.1"
+nestify = "0.3.2"
 ```
 
 Then use the macro:
@@ -545,6 +545,99 @@ struct MyTuple(i32, String);
 <br>
 
 This adjustment simplifies syntax, particularly in the context of defining nested structures, aligning with Nestify's goal of enhancing code readability and maintenance. Whether you include the semicolon or not, Nestify processes the definitions correctly, thanks to its domain-specific optimizations.
+
+## Visibility 
+
+Visibility can be altered in both parent and nested structures. It exhibits the following behavior
+
+### Named Field Visibility
+When using named fields, you must specify the desired visibility before *both* the field and the definition.
+
+```rust
+nest! {
+    pub struct One {
+        pub two: pub struct Two
+        //|      ^^^ visibility applied to definition (b)
+        //|> visibility applied to field (a)
+    }
+}
+```
+
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
+pub struct One { 
+    pub two: Two,
+    //^ (a)
+}
+
+pub struct Two;
+//^ (b)
+```
+
+</details>
+
+### Unnamed Field Visibility
+Unnamed fields apply visibility to both the field and the item.
+
+```rust
+nest! {
+    pub struct One(pub struct Two)
+    //             ^^^ visibility applied to both field and struct
+}
+```
+
+
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
+pub struct One(pub Two);
+//             ^^^ applied here
+
+pub struct Two;
+//^ and here
+```
+
+</details>
+
+### Enum Variants
+Enum variants apply visibility just to the structure.
+This is because variants inherit the base visibility of the enum.
+See [E0449](https://doc.rust-lang.org/error_codes/E0449.html) for more details.
+
+```rust
+nest! {
+    pub enum One {
+        Two(pub struct Two)
+        //  ^^^ will apply to the structure
+    }
+}
+```
+
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
+pub enum One { 
+    Two(Two) 
+}
+
+pub struct Two;
+//^ applied to structure
+```
+
+</details>
 
 ## Generic containers
 
