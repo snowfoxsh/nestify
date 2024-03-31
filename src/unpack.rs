@@ -51,7 +51,7 @@ impl Unpack for Special {
     ///
     /// # Returns
     /// A `TokenStream` representing the generated Rust code after unpacking.
-    fn unpack(self, mut unpack_context: UnpackContext, next: Vec<CompositeAttribute>, override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
+    fn unpack(self, mut unpack_context: UnpackContext, next: Vec<CompositeAttribute>, override_public: Option<Visibility>, _enum_context: bool) -> Self::Output {
         // combine the attributes from the current and previous
         let attrs = [self.attrs, next].concat();
         let attrs = unpack_context.modify_composite(attrs);
@@ -92,7 +92,7 @@ impl Unpack for Special {
                 SpecialFields::Unit => {
                     // no unpacking required here, since there are no types
                     // in other words, this branch is always a leaf
-                    
+
                     quote!(
                         #(#attrs)*
                         #visibility struct #ident #generics;
@@ -102,7 +102,7 @@ impl Unpack for Special {
             Body::Enum(body_enum) => {
                 let mut accumulated_definitions = vec![];
                 let mut variants = vec![];
-                
+
                 for variant in body_enum.variants {
                     let (attrs, next) = UnpackContext::filter_field_nested(variant.attrs); // todo: handle this
                     let ident = variant.ident;
@@ -136,7 +136,7 @@ impl Unpack for Special {
 impl Unpack for SpecialFields {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self, unpack_context: UnpackContext, next: Vec<CompositeAttribute>, override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext, next: Vec<CompositeAttribute>, _override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
         match self {
             // Delegates to the `unpack` implementation of `FieldsNamed`, which handles the
             // unpacking of named fields,
@@ -160,14 +160,14 @@ impl Unpack for SpecialFields {
 impl Unpack for FieldsNamed {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self, unpack_context: UnpackContext, from_variant: Vec<CompositeAttribute>,  override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext, from_variant: Vec<CompositeAttribute>, _override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
         // fields buffer load each
         let mut fields = vec![];
         let mut definitions = vec![];
 
         // iterate through the fields
         for field in self.named {
-            // filter the attributes, passing the #> to the next iteration, 
+            // filter the attributes, passing the #> to the next iteration,
             // we need to filter the attributes so that we can determine which are normal
             // or which should be passed on
             let (attrs, next) = UnpackContext::filter_field_nested(field.attrs);
@@ -176,13 +176,16 @@ impl Unpack for FieldsNamed {
             let _mutability = field.mutability;
             // this is a named type, so there should always be an ident
             // if there is no ident then there should be a parsing bug
-            let ident = field.ident.unwrap_or_else(||
-                panic!("Internal Macro Error. This is a bug. \
+            let ident = field.ident.unwrap_or_else(|| {
+                panic!(
+                    "Internal Macro Error. This is a bug. \
                 Please Consider opening an issue with steps to reproduce the bug \
-                Provide this information: Error from line {}", {line!()}));
-            
+                Provide this information: Error from line {}",
+                    { line!() }
+                )
+            });
+
             let fish = field.fish;
-            
 
             // branch off the type depending on if leaf is reached
             match field.ty {
@@ -190,6 +193,19 @@ impl Unpack for FieldsNamed {
                 // `SpecialType::Type`
                 // doesn't need fish because it will always be None
                 SpecialType::Type(ty) => {
+                    let field = quote!(
+                        #(#attrs)*
+                        #vis #ident : #ty
+                    );
+                    fields.push(field);
+                }
+                SpecialType::Augmented(augmented) => {
+                    // combine attributes possibly inherited from an enum variant with field attrs
+                    let next = [next, from_variant.clone()].concat();
+
+                    let (ty, mut aug_definitions) = augmented.unpack(unpack_context.clone(), next, None, enum_context);
+                    definitions.append(&mut aug_definitions);
+
                     let field = quote!(
                         #(#attrs)*
                         #vis #ident : #ty
@@ -207,7 +223,6 @@ impl Unpack for FieldsNamed {
                         #vis #ident : #ty #fish
                     );
                     fields.push(field);
-
 
                     // combine attributes possibly inherited from an enum variant with field attrs
                     let next = [next, from_variant.clone()].concat();
@@ -233,7 +248,7 @@ impl Unpack for FieldsNamed {
 impl Unpack for FieldsUnnamed {
     type Output = (TokenStream, Vec<TokenStream>);
     //             ^body        ^definitions
-    fn unpack(self, unpack_context: UnpackContext, from_variant: Vec<CompositeAttribute>, override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
+    fn unpack(self, unpack_context: UnpackContext, from_variant: Vec<CompositeAttribute>, _override_public: Option<Visibility>, enum_context: bool) -> Self::Output {
         let mut fields = vec![];
         let mut definitions = vec![];
 
@@ -256,13 +271,31 @@ impl Unpack for FieldsUnnamed {
 
             // this is an unnamed variant so there should never Some(T)
             let _ident = field.ident; // todo: warn if this is not none
-            
+
             let fish = field.fish;
 
 
             // branch off based on if a type is defined or should be defined
             match field.ty {
                 SpecialType::Type(ty) => {
+                    let field = quote!(
+                        #(#attrs)*
+                        #vis #ty
+                    );
+                    fields.push(field);
+                }
+                SpecialType::Augmented(augmented) => {
+                    // combine attributes possibly inherited from an enum variant with field attrs
+                    let next = [next, from_variant.clone()].concat();
+
+                    // if it is an unnamed field, then the definition visibility must be overridden
+                    let override_publicity = Some(move_vis.clone());
+
+                    // if field is unnamed the field publicity should be applied to the definition
+
+                    let (ty, mut aug_definitions) = augmented.unpack(unpack_context.clone(), next, override_publicity, enum_context);
+                    definitions.append(&mut aug_definitions);
+
                     let field = quote!(
                         #(#attrs)*
                         #vis #ty

@@ -1,4 +1,4 @@
-use syn::{parse_str, Token};
+use syn::parse_str;
 use quote::quote;
 use crate::attributes::AttributeModifier;
 

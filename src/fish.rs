@@ -1,13 +1,13 @@
 use proc_macro2::{Span, TokenStream};
 use quote::{ToTokens};
 use syn::parse::{Parse, ParseStream};
-use syn::{Generics, Token};
+use syn::{Token, AngleBracketedGenericArguments};
 use syn::spanned::Spanned;
 
-#[derive(Clone, Default, Debug)]
+#[derive(Clone, Debug)]
 pub struct FishHook {
     pub prefix: Token![||],
-    pub generics: Generics,
+    pub generics: AngleBracketedGenericArguments,
 }
 
 impl FishHook {
@@ -24,7 +24,11 @@ impl Parse for FishHook {
             generics: input.parse()?,
         };
 
-        if fish.generics.params.iter().count() == 0 {
+        if let Some(tokens) = fish.generics.colon2_token {
+            return Err(syn::Error::new(tokens.span(), ":: are not allowed in FishHook syntax"));
+        }
+
+        if fish.generics.args.iter().count() == 0 {
             return Err(syn::Error::new(fish.span(), "FishHook should not have empty or no generics"));
         }
         Ok(fish)

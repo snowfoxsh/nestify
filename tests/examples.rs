@@ -1,4 +1,7 @@
+#![allow(dead_code, unused_variables)]
+
 use nestify::nest;
+
 
 mod quick_examples {
     use super::*;
@@ -102,10 +105,6 @@ mod generics {
             }
         }
     }
-}
-
-mod attributes {
-    use super::*;
 }
 
 mod field_attributes {

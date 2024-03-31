@@ -639,31 +639,29 @@ pub struct Two;
 
 </details>
 
---- 
+## Generic containers
 
-## Limitations
-
-In Nestify, while you can work with a wide range of complex types to structure your data effectively, there's a specific limitation regarding the definition of new types directly within the generics of other types. This limitation affects scenarios where you might want to dynamically define a struct or enum inside a generic container like `Vec<T>`, `Option<T>`, or `Result<T, E>` as part of the type declaration.
-
-The limitation is specifically around embedding a new type definition within the generic parameters of another type. For instance:
+Nestify also supports defining nested structures inside generic containers like `Vec<T>`, `Option<T>`, or `Result<T, E>`.
 
 ```rust
-// This pattern is not supported:
 struct One(Vec<struct Two { field: i32 }>);
 ```
 
-Here, `struct Two` is being defined directly within the generic parameter of `Vec<T>`, which is not currently possible with Nestify.
+Here, `struct Two` is being defined directly within the generic parameter of `Vec<T>`.
 
 ### Another Example
 
 To further illustrate, consider a scenario where you want to include an optional configuration struct within another struct:
 
 ```rust
-// This pattern is also not supported:
 struct AppConfig(Option<struct DatabaseConfig { url: String }>);
 ```
 
-In this example, `struct DatabaseConfig` is defined directly within the `Option<T>` generic type in the declaration of `AppConfig`. This specific way of defining `DatabaseConfig` inline as part of the `AppConfig` declaration is not supported by Nestify at the moment.
+In this example, `struct DatabaseConfig` is defined directly within the `Option<T>` generic type in the declaration of `AppConfig`.
+
+## Limitations
+
+Other kinds of indirections are not supported, such as after a `&` or `&mut`, inside a fixed size array `[_, N]` or dynamic size array `[_]`, tuples and probably many others. If you need such indirections feel free to contribute to add support for them.
 
 ---
 

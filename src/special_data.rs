@@ -334,7 +334,7 @@ impl SpecialField {
     }
 }
 
-fn handle_fish_hook(input: &mut ParseStream, ty: &SpecialType) -> syn::Result<Option<FishHook>> {
+pub(crate) fn handle_fish_hook(input: &mut ParseStream, ty: &SpecialType) -> syn::Result<Option<FishHook>> {
     if input.peek(Token![||]) {
         // only allow FishHook syntax after a nested type definition
         let fishhook = input.parse::<FishHook>()?;
