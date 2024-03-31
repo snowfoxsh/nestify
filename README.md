@@ -723,11 +723,3 @@ MIT license support will always be maintained. Don't fear!
 ## Contact me
 
 Check GitHub for information @snowfoxsh
-
-[//]: # (STYLES)
-
-<style>
-summary::marker {
-  color: #2f80f5;
-}
-</style>
