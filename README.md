@@ -32,7 +32,7 @@ Add this to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-nestify = "0.3.2"
+nestify = "0.3.3"
 ```
 
 Then use the macro:
