@@ -1,8 +1,11 @@
 # TODO
 
-- [ ] HIGH: fix publicity modifiers [ISSUE](https://github.com/snowfoxsh/nestify/issues/1)
-  - [ ] Enums
-  - [ ] Confirm structures
+- [x] HIGH: fix publicity modifiers [ISSUE](https://github.com/snowfoxsh/nestify/issues/1)
+  - [x] Enums
+  - [x] Confirm structures
+- [ ] Generic Nesting
+  - [x] Add support for container generic nesting
+  - [ ] Add support for tuple slice + more types generic nesting
 - [x] add nested attribute `#>[meta]` support
 - [x] fix where clause
 - [ ] improve documentation
