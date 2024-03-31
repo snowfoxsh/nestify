@@ -646,6 +646,21 @@ Nestify also supports defining nested structures inside generic containers like 
 ```rust
 struct One(Vec<struct Two { field: i32 }>);
 ```
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
+struct One(Vec<Two>);
+
+struct Two {
+    field: i32,
+}
+```
+
+</details>
 
 Here, `struct Two` is being defined directly within the generic parameter of `Vec<T>`.
 
@@ -657,17 +672,38 @@ To further illustrate, consider a scenario where you want to include an optional
 struct AppConfig(Option<struct DatabaseConfig { url: String }>);
 ```
 
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
+struct AppConfig(Option<DatabaseConfig>);
+
+struct DatabaseConfig {
+    url: String,
+}
+```
+
+</details>
+
 In this example, `struct DatabaseConfig` is defined directly within the `Option<T>` generic type in the declaration of `AppConfig`.
 
-## Limitations
+### Limitations
 
 Other kinds of indirections are not supported, such as after a `&` or `&mut`, inside a fixed size array `[_, N]` or dynamic size array `[_]`, tuples and probably many others. If you need such indirections feel free to contribute to add support for them.
 
 ---
 
 ## Contributing
+I love contributors! Plus,
+I'm a bad writer, so I would love community support to improve this guide as well.
 
-I love contributors. I'm a bad writer, so I would love community support to improve this guide!
+> [!IMPORTANT]
+> While not required, 
+> It is *strongly recommended* that you either [submit an issue](https://github.com/snowfoxsh/nestify/issues) 
+> or [contact me](#contact-me) before implementing a feature for the best chance of being accepted
 
 To make code changes:
 
@@ -686,4 +722,12 @@ MIT license support will always be maintained. Don't fear!
 
 ## Contact me
 
-Check github for information @snowfoxsh
+Check GitHub for information @snowfoxsh
+
+[//]: # (STYLES)
+
+<style>
+summary::marker {
+  color: #2f80f5;
+}
+</style>

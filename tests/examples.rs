@@ -1,3 +1,5 @@
+//! Contains examples from the guide in README.md
+
 #![allow(dead_code, unused_variables)]
 
 use nestify::nest;
@@ -158,12 +160,27 @@ mod visibility {
     }
 }
 
-enum EnumVariants {
-    Unit,
-    Tuple(i32, TupleNested),
-    Struct {
-        f1: i32
-    },
-    // DiscriminantVariant = 1,
+mod generic_definitions {
+    use super::*;
+    fn vec_example() {
+        nest! {
+            struct One(Vec<struct Two { field: i32 }>);
+        }
+    }
+    
+    fn option_example() {
+        nest! {
+            struct AppConfig(Option<struct DatabaseConfig { url: String }>);
+        }
+    }
 }
-struct TupleNested;
+
+// enum EnumVariants {
+//     Unit,
+//     Tuple(i32, TupleNested),
+//     Struct {
+//         f1: i32
+//     },
+//     // DiscriminantVariant = 1,
+// }
+// struct TupleNested;
