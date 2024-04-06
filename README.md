@@ -723,3 +723,8 @@ MIT license support will always be maintained. Don't fear!
 ## Contact me
 
 Check GitHub for information @snowfoxsh
+
+## Credits
+These wonderful people made major contributions. Check them out
+
+- @nanocryk: Implemented nested definitions in generics
