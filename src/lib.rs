@@ -19,7 +19,7 @@ pub(crate) mod unpack_context;
 /// data structures annotated with custom attributes, facilitating a form of
 /// metaprogramming within Rust macros.
 pub(crate) mod unpack;
-
+mod attribute_removal;
 
 /// Allows for the expansion of "nested" items
 ///

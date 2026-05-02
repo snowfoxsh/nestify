@@ -1,3 +1,4 @@
+use crate::attribute_removal::remove_or_subtract_attr;
 use crate::attributes::{Attribute, AttributeModifier, CompositeAttribute, FieldAttribute};
 
 #[derive(Clone, Default)]
@@ -45,16 +46,15 @@ impl UnpackContext {
                     AttributeModifier::Slash(_) => {
                         let a: Attribute = ca.into();
 
-                        // already defined so lets error
-                        if !freeze.contains(&a) {
+                        // remove from freeze
+                        if !remove_or_subtract_attr(&mut freeze, &a) {
                             panic!("not in the stack, dont need to remove (/)");
                         }
 
                         // remove from the future
-                        self.inherited.retain(|attr| attr != &a);
-
-                        // remove from freeze
-                        freeze.retain(|attr| attr != &a);
+                        if !remove_or_subtract_attr(&mut self.inherited, &a) {
+                            panic!("not in the inherited stack, cannot stop propagation (/)");
+                        }
 
                         // remove it from the current
                         None
@@ -62,15 +62,12 @@ impl UnpackContext {
                     AttributeModifier::Minus(_) => {
                         let a: Attribute = ca.into();
 
-                        // not in the stack so cant remove, lets error
-                        if !freeze.contains(&a) {
+                        // remove from freeze
+                        if !remove_or_subtract_attr(&mut freeze, &a) {
                             panic!("not in the stack, dont need to remove (-)");
                         }
 
                         // don't remove it from the future
-
-                        // remove from freeze
-                        freeze.retain(|attr| attr != &a);
 
                         // remove it from the current
                         None

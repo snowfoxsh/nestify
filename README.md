@@ -22,7 +22,7 @@ Nestify is crafted for ease of learning, with its syntax tailored to be comforta
 - Simplify nested struct and enum definitions in Rust.
 - Make your codebase more readable and less verbose.
 - Ideal for modeling complex API responses.
-- Advanced attribute modifiers.
+- Advanced attribute modifiers for recursive propagation, single-item removal, propagation control, and structural partial removal.
 - Works well with Serde.
 - Intuitive syntax
 
@@ -317,7 +317,7 @@ nest! {
 ```rust
 #[apply_all]
 struct One {
-    two: Tow,
+    two: Two,
 }
 
 #[apply_all]
@@ -427,6 +427,101 @@ struct Four {}
 ```
 
 </details>
+
+#### Partial Attribute Removal
+
+For list-style attributes, `-` and `/` can remove part of an inherited attribute without removing the entire attribute.
+
+```rust
+nest! {
+    #[derive(Debug, Clone, PartialEq)]*
+    struct One {
+        two: #[derive(Debug)]-
+        struct Two {
+            value: i32,
+        }
+    }
+}
+```
+
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
+#[derive(Debug, Clone, PartialEq)]
+struct One {
+    two: Two,
+}
+
+#[derive(Clone, PartialEq)]
+struct Two {
+    value: i32,
+}
+```
+
+</details>
+
+This is especially useful when most nested types should share a derive, but one type needs to opt out of a specific trait.
+
+```rust
+nest! {
+    #[derive(Debug, Clone, Serialize, Deserialize)]*
+    pub struct One {
+        two: Option<
+            #[derive(Deserialize)]-
+            pub struct Two {
+                two: Option<String>,
+            }
+        >,
+    }
+}
+```
+
+In this example, `Two` keeps `Debug`, `Clone`, and `Serialize`, but removes `Deserialize` for that item only.
+
+#### Partial Removal with `cfg_attr`
+
+Partial removal also works structurally with nested list-style attributes such as `cfg_attr`.
+
+```rust
+nest! {
+    #[cfg_attr(all(), derive(Debug, Eq, PartialEq))]*
+    #[cfg_attr(all(), derive(Clone))]*
+    struct Foo {
+        field: #[cfg_attr(derive(Debug, Eq, Clone))]-
+        struct Bar {
+            value: u32,
+        }
+    }
+}
+```
+
+<details class="expand">
+    <summary>
+    Expand
+    </summary>
+    <br>
+
+```rust
+#[cfg_attr(all(), derive(Debug, Eq, PartialEq))]
+#[cfg_attr(all(), derive(Clone))]
+struct Foo {
+    field: Bar,
+}
+
+#[cfg_attr(all(), derive(PartialEq))]
+struct Bar {
+    value: u32,
+}
+```
+
+</details>
+
+> [!NOTE]
+> Partial removal is structural. Nestify removes matching comma-separated token groups from list-style attributes. It does not validate whether the resulting attribute is semantically meaningful for every possible custom or procedural macro attribute.
 
 ### Field Attributes **`#>[meta]`**
 
